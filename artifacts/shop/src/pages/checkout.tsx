@@ -8,25 +8,38 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useGetSettings, useCreateOrder, OrderInputPaymentMethod } from "@workspace/api-client-react";
 import { useState, useRef } from "react";
-import { Trash2, Copy, CheckCircle2, ShieldCheck, Phone, Loader2, Lock } from "lucide-react";
+import { Trash2, Copy, CheckCircle2, ShieldCheck, Phone, Loader2, Lock, MapPin, Truck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/components/auth-context";
+
+type DeliveryZone = "inside-dhaka" | "outside-dhaka";
+
+const DELIVERY_CHARGE: Record<DeliveryZone, number> = {
+  "inside-dhaka": 60,
+  "outside-dhaka": 120,
+};
 
 export function CheckoutPage() {
   const { items, removeItem, updateQuantity, totalPrice, totalItems, clearCart } = useCart();
   const { data: settings } = useGetSettings();
+  const { customer } = useAuth();
   const createOrder = useCreateOrder();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
-    customerName: "",
-    customerPhone: "",
-    customerAddress: "",
+    customerName: customer?.name || "",
+    customerPhone: customer?.phone || "",
+    customerAddress: customer?.address || "",
     paymentMethod: "cod" as OrderInputPaymentMethod,
     paymentNumber: "",
     transactionId: "",
-    note: ""
+    note: "",
   });
+
+  const [deliveryZone, setDeliveryZone] = useState<DeliveryZone>("inside-dhaka");
+  const deliveryCharge = DELIVERY_CHARGE[deliveryZone];
+  const grandTotal = totalPrice + deliveryCharge;
 
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -48,22 +61,16 @@ export function CheckoutPage() {
 
   const handlePhoneChange = (val: string) => {
     setFormData({ ...formData, customerPhone: val });
-    if (otpStep !== "idle") {
-      setOtpStep("idle");
-      setOtpInput("");
-      setOtpCode("");
-      setOtpError("");
-    }
+    if (otpStep !== "idle") { setOtpStep("idle"); setOtpInput(""); setOtpCode(""); setOtpError(""); }
   };
 
   const handleSendOtp = async () => {
     const phone = formData.customerPhone.trim();
     if (!phone) {
-      toast({ title: "Enter phone number", description: "Please enter your phone number first.", variant: "destructive" });
+      toast({ title: "Enter phone number", variant: "destructive" });
       return;
     }
-    setSendingOtp(true);
-    setOtpError("");
+    setSendingOtp(true); setOtpError("");
     try {
       const res = await fetch("/api/otp/send", {
         method: "POST",
@@ -71,32 +78,19 @@ export function CheckoutPage() {
         body: JSON.stringify({ phone }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setOtpError(data.error ?? "Failed to send OTP. Check your phone number.");
-        return;
-      }
-      setOtpStep("sent");
-      setDemoMode(!!data.demoMode);
-      if (data.demoMode && data.demoCode) {
-        setOtpCode(data.demoCode);
-      }
+      if (!res.ok) { setOtpError(data.error ?? "Failed to send OTP"); return; }
+      setOtpStep("sent"); setDemoMode(!!data.demoMode);
+      if (data.demoMode && data.demoCode) setOtpCode(data.demoCode);
       toast({ title: "OTP Sent!", description: data.demoMode ? "Demo mode: OTP shown below." : `OTP sent to ${phone}` });
       setTimeout(() => otpInputRef.current?.focus(), 100);
-    } catch {
-      setOtpError("Network error. Please try again.");
-    } finally {
-      setSendingOtp(false);
-    }
+    } catch { setOtpError("Network error. Please try again."); }
+    finally { setSendingOtp(false); }
   };
 
   const handleVerifyOtp = async () => {
     const phone = formData.customerPhone.trim();
-    if (!otpInput || otpInput.length !== 6) {
-      setOtpError("Please enter the 6-digit OTP.");
-      return;
-    }
-    setVerifyingOtp(true);
-    setOtpError("");
+    if (!otpInput || otpInput.length !== 6) { setOtpError("Please enter the 6-digit OTP."); return; }
+    setVerifyingOtp(true); setOtpError("");
     try {
       const res = await fetch("/api/otp/verify", {
         method: "POST",
@@ -104,31 +98,28 @@ export function CheckoutPage() {
         body: JSON.stringify({ phone, code: otpInput }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setOtpError(data.error ?? "Invalid OTP. Please try again.");
-        return;
-      }
+      if (!res.ok) { setOtpError(data.error ?? "Invalid OTP. Please try again."); return; }
       setOtpStep("verified");
-      toast({ title: "Phone Verified!", description: "Your phone number has been verified." });
-    } catch {
-      setOtpError("Network error. Please try again.");
-    } finally {
-      setVerifyingOtp(false);
-    }
+      toast({ title: "Phone Verified! ✅" });
+    } catch { setOtpError("Network error. Please try again."); }
+    finally { setVerifyingOtp(false); }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
     if (otpStep !== "verified") {
-      toast({ title: "Phone not verified", description: "Please verify your phone number with OTP before placing order.", variant: "destructive" });
+      toast({ title: "Phone not verified", description: "Please verify your phone number first.", variant: "destructive" });
       return;
     }
+
+    const deliveryNote = `Delivery: ${deliveryZone === "inside-dhaka" ? "Inside Dhaka (BDT 60)" : "Outside Dhaka (BDT 120)"}${formData.note ? " | " + formData.note : ""}`;
 
     createOrder.mutate({
       data: {
         ...formData,
-        items: items.map(item => ({ productId: item.product.id, quantity: item.quantity }))
+        note: deliveryNote,
+        items: items.map(item => ({ productId: item.product.id, quantity: item.quantity })),
       }
     }, {
       onSuccess: (order) => {
@@ -136,8 +127,8 @@ export function CheckoutPage() {
         setLocation(`/order-success?id=${order.id}`);
       },
       onError: () => {
-        toast({ title: "Error placing order", description: "There was a problem placing your order. Please try again.", variant: "destructive" });
-      }
+        toast({ title: "Error placing order", description: "There was a problem. Please try again.", variant: "destructive" });
+      },
     });
   };
 
@@ -147,7 +138,7 @@ export function CheckoutPage() {
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
           <p className="text-muted-foreground mb-8">Looks like you haven't added anything to your cart yet.</p>
-          <Button asChild size="lg"><Link href="/products">Start Shopping</Link></Button>
+          <Button asChild size="lg" className="neon-glow"><Link href="/products">Start Shopping</Link></Button>
         </div>
       </StoreLayout>
     );
@@ -156,7 +147,6 @@ export function CheckoutPage() {
   return (
     <StoreLayout>
       <div className="container mx-auto px-4 py-8">
-        {/* Progress steps */}
         <div className="flex items-center gap-2 mb-8 text-sm">
           <Link href="/products" className="text-muted-foreground hover:text-primary">Shop</Link>
           <span className="text-muted-foreground">/</span>
@@ -178,13 +168,8 @@ export function CheckoutPage() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="customerName">Full Name *</Label>
-                    <Input
-                      id="customerName"
-                      required
-                      placeholder="e.g. Mohammad Rahim"
-                      value={formData.customerName}
-                      onChange={e => setFormData({ ...formData, customerName: e.target.value })}
-                    />
+                    <Input id="customerName" required placeholder="e.g. Mohammad Rahim"
+                      value={formData.customerName} onChange={e => setFormData({ ...formData, customerName: e.target.value })} />
                   </div>
 
                   {/* Phone with OTP */}
@@ -193,59 +178,38 @@ export function CheckoutPage() {
                     <div className="flex gap-2">
                       <div className="relative flex-1">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="customerPhone"
-                          required
-                          placeholder="01XXXXXXXXX"
-                          className="pl-9"
-                          value={formData.customerPhone}
-                          onChange={e => handlePhoneChange(e.target.value)}
-                          disabled={otpStep === "verified"}
-                        />
+                        <Input id="customerPhone" required placeholder="01XXXXXXXXX" className="pl-9"
+                          value={formData.customerPhone} onChange={e => handlePhoneChange(e.target.value)}
+                          disabled={otpStep === "verified"} />
                       </div>
                       {otpStep === "verified" ? (
                         <div className="flex items-center gap-1.5 text-green-600 font-semibold px-3 bg-green-50 border border-green-200 rounded-lg text-sm whitespace-nowrap">
                           <CheckCircle2 className="w-4 h-4" /> Verified
                         </div>
                       ) : (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleSendOtp}
+                        <Button type="button" variant="outline" onClick={handleSendOtp}
                           disabled={sendingOtp || !formData.customerPhone}
-                          className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white"
-                        >
-                          {sendingOtp ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Sending...</> : otpStep === "sent" ? "Resend OTP" : "Send OTP"}
+                          className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white">
+                          {sendingOtp ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Sending…</> : otpStep === "sent" ? "Resend OTP" : "Send OTP"}
                         </Button>
                       )}
                     </div>
-
-                    {/* OTP Input Panel */}
                     {otpStep === "sent" && (
-                      <div className="mt-3 p-4 bg-orange-50 border border-orange-200 rounded-lg space-y-3">
-                        <div className="flex items-center gap-2 text-sm font-medium text-orange-800">
-                          <ShieldCheck className="w-4 h-4" />
+                      <div className="mt-3 p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-3">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                          <ShieldCheck className="w-4 h-4 text-primary" />
                           {demoMode ? (
-                            <span>Demo Mode — OTP: <strong className="text-lg tracking-widest font-mono bg-orange-100 px-2 py-0.5 rounded">{otpCode}</strong></span>
+                            <span>Demo Mode — OTP: <strong className="text-lg tracking-widest font-mono bg-primary/10 px-2 py-0.5 rounded">{otpCode}</strong></span>
                           ) : (
                             <span>OTP sent to <strong>{formData.customerPhone}</strong>. Valid for 10 minutes.</span>
                           )}
                         </div>
                         <div className="flex gap-2">
-                          <Input
-                            ref={otpInputRef}
-                            placeholder="Enter 6-digit OTP"
-                            maxLength={6}
-                            value={otpInput}
-                            onChange={e => { setOtpInput(e.target.value.replace(/\D/g, "")); setOtpError(""); }}
+                          <Input ref={otpInputRef} placeholder="Enter 6-digit OTP" maxLength={6}
+                            value={otpInput} onChange={e => { setOtpInput(e.target.value.replace(/\D/g, "")); setOtpError(""); }}
                             className="font-mono text-center text-lg tracking-widest"
-                            onKeyDown={e => e.key === "Enter" && handleVerifyOtp()}
-                          />
-                          <Button
-                            type="button"
-                            onClick={handleVerifyOtp}
-                            disabled={verifyingOtp || otpInput.length !== 6}
-                          >
+                            onKeyDown={e => e.key === "Enter" && handleVerifyOtp()} />
+                          <Button type="button" onClick={handleVerifyOtp} disabled={verifyingOtp || otpInput.length !== 6} className="neon-glow">
                             {verifyingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify"}
                           </Button>
                         </div>
@@ -255,26 +219,45 @@ export function CheckoutPage() {
                     {otpStep === "idle" && otpError && <p className="text-sm text-destructive mt-1">{otpError}</p>}
                   </div>
 
+                  {/* Delivery Zone Selector */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1.5 font-semibold">
+                      <Truck className="w-4 h-4 text-primary" /> Delivery Zone *
+                    </Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {(["inside-dhaka", "outside-dhaka"] as DeliveryZone[]).map(zone => (
+                        <div key={zone}
+                          onClick={() => setDeliveryZone(zone)}
+                          className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${deliveryZone === zone ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/40"}`}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <MapPin className={`w-4 h-4 ${deliveryZone === zone ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={`font-bold text-sm ${deliveryZone === zone ? "text-primary" : ""}`}>
+                              {zone === "inside-dhaka" ? "Inside Dhaka" : "Outside Dhaka"}
+                            </span>
+                          </div>
+                          <div className={`text-xl font-black ${deliveryZone === zone ? "text-primary" : "text-foreground"}`}>
+                            BDT {DELIVERY_CHARGE[zone]}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {zone === "inside-dhaka" ? "Dhaka city & suburbs" : "All other districts"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="customerAddress">Detailed Address *</Label>
-                    <Textarea
-                      id="customerAddress"
-                      required
-                      rows={3}
+                    <Textarea id="customerAddress" required rows={3}
                       placeholder="House, Road, Area, District"
                       value={formData.customerAddress}
-                      onChange={e => setFormData({ ...formData, customerAddress: e.target.value })}
-                    />
+                      onChange={e => setFormData({ ...formData, customerAddress: e.target.value })} />
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="note">Order Note (Optional)</Label>
-                    <Textarea
-                      id="note"
-                      rows={2}
-                      placeholder="Any special instructions..."
-                      value={formData.note}
-                      onChange={e => setFormData({ ...formData, note: e.target.value })}
-                    />
+                    <Textarea id="note" rows={2} placeholder="Any special instructions…"
+                      value={formData.note} onChange={e => setFormData({ ...formData, note: e.target.value })} />
                   </div>
                 </div>
               </div>
@@ -285,21 +268,17 @@ export function CheckoutPage() {
                   <span className="w-7 h-7 rounded-full bg-primary text-white text-sm flex items-center justify-center font-bold">2</span>
                   Payment Method
                 </h2>
-                <RadioGroup
-                  value={formData.paymentMethod}
+                <RadioGroup value={formData.paymentMethod}
                   onValueChange={(val: any) => setFormData({ ...formData, paymentMethod: val })}
-                  className="grid sm:grid-cols-3 gap-4"
-                >
+                  className="grid sm:grid-cols-3 gap-4">
                   {[
                     { value: "cod", label: "Cash on Delivery", color: "" },
                     { value: "bkash", label: "bKash", color: "text-pink-600" },
                     { value: "rocket", label: "Rocket", color: "text-purple-700" },
                   ].map(opt => (
-                    <div
-                      key={opt.value}
+                    <div key={opt.value}
                       className={`border-2 rounded-lg p-4 cursor-pointer flex flex-col items-center justify-center gap-2 transition-all ${formData.paymentMethod === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/50 hover:bg-muted"}`}
-                      onClick={() => setFormData({ ...formData, paymentMethod: opt.value as OrderInputPaymentMethod })}
-                    >
+                      onClick={() => setFormData({ ...formData, paymentMethod: opt.value as OrderInputPaymentMethod })}>
                       <RadioGroupItem value={opt.value} id={opt.value} className="sr-only" />
                       <Label htmlFor={opt.value} className={`cursor-pointer font-bold ${opt.color}`}>{opt.label}</Label>
                     </div>
@@ -324,11 +303,13 @@ export function CheckoutPage() {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="paymentNumber">Sender Number *</Label>
-                        <Input id="paymentNumber" required value={formData.paymentNumber} onChange={e => setFormData({ ...formData, paymentNumber: e.target.value })} placeholder="e.g. 017xxxxxxxx" />
+                        <Input id="paymentNumber" required value={formData.paymentNumber}
+                          onChange={e => setFormData({ ...formData, paymentNumber: e.target.value })} placeholder="e.g. 017xxxxxxxx" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="transactionId">Transaction ID *</Label>
-                        <Input id="transactionId" required value={formData.transactionId} onChange={e => setFormData({ ...formData, transactionId: e.target.value })} placeholder="e.g. 8KXXXXXX" />
+                        <Input id="transactionId" required value={formData.transactionId}
+                          onChange={e => setFormData({ ...formData, transactionId: e.target.value })} placeholder="e.g. 8KXXXXXX" />
                       </div>
                     </div>
                   </div>
@@ -337,13 +318,13 @@ export function CheckoutPage() {
 
               {/* Mobile place order */}
               <div className="md:hidden">
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full h-14 text-lg gap-2"
-                  disabled={createOrder.isPending || otpStep !== "verified"}
-                >
-                  {otpStep !== "verified" ? <><Lock className="w-5 h-5" /> Verify Phone to Place Order</> : createOrder.isPending ? "Processing..." : `Place Order — BDT ${totalPrice}`}
+                <Button type="submit" size="lg" className="w-full h-14 text-lg gap-2 neon-glow"
+                  disabled={createOrder.isPending || otpStep !== "verified"}>
+                  {otpStep !== "verified"
+                    ? <><Lock className="w-5 h-5" /> Verify Phone to Place Order</>
+                    : createOrder.isPending
+                    ? "Processing…"
+                    : `Place Order — BDT ${grandTotal.toLocaleString()}`}
                 </Button>
               </div>
             </form>
@@ -362,11 +343,11 @@ export function CheckoutPage() {
                   {items.map((item) => (
                     <div key={item.product.id} className="flex gap-3 items-center">
                       <div className="w-16 h-16 rounded-lg border bg-muted flex-shrink-0 overflow-hidden">
-                        {item.product.images?.[0] && <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />}
+                        {item.product.images?.[0] && <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" loading="lazy" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate" title={item.product.name}>{item.product.name}</p>
-                        <div className="text-primary font-bold text-sm">BDT {item.product.price}</div>
+                        <div className="text-primary font-bold text-sm">BDT {item.product.price.toLocaleString()}</div>
                         <div className="flex items-center gap-2 mt-1">
                           <button className="w-6 h-6 flex items-center justify-center border rounded hover:bg-muted text-lg leading-none" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>−</button>
                           <span className="text-sm w-5 text-center font-medium">{item.quantity}</span>
@@ -383,31 +364,30 @@ export function CheckoutPage() {
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal ({totalItems} items)</span>
-                    <span>BDT {totalPrice}</span>
+                    <span>BDT {totalPrice.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Delivery</span>
-                    <span className="text-green-600 font-medium">Calculated later</span>
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Truck className="w-3.5 h-3.5" />
+                      Delivery ({deliveryZone === "inside-dhaka" ? "Inside Dhaka" : "Outside Dhaka"})
+                    </span>
+                    <span className="font-medium text-orange-600">BDT {deliveryCharge}</span>
                   </div>
                   <div className="flex justify-between font-bold text-xl pt-3 border-t mt-2">
                     <span>Total</span>
-                    <span className="text-primary">BDT {totalPrice}</span>
+                    <span className="text-primary">BDT {grandTotal.toLocaleString()}</span>
                   </div>
                 </div>
 
-                <Button
-                  type="submit"
-                  form="checkout-form"
-                  size="lg"
-                  className="w-full h-14 text-lg mt-5 hidden md:flex gap-2 items-center justify-center"
-                  disabled={createOrder.isPending || otpStep !== "verified"}
-                >
+                <Button type="submit" form="checkout-form" size="lg"
+                  className="w-full h-14 text-lg mt-5 hidden md:flex gap-2 items-center justify-center neon-glow"
+                  disabled={createOrder.isPending || otpStep !== "verified"}>
                   {otpStep !== "verified" ? (
                     <><Lock className="w-5 h-5" /> Verify Phone First</>
                   ) : createOrder.isPending ? (
-                    <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
+                    <><Loader2 className="w-5 h-5 animate-spin" /> Processing…</>
                   ) : (
-                    <>Place Order — BDT {totalPrice}</>
+                    <>Place Order — BDT {grandTotal.toLocaleString()}</>
                   )}
                 </Button>
 
