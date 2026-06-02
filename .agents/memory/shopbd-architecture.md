@@ -21,4 +21,4 @@ description: Key design decisions, color system, and conventions for the ShopBD/
 
 ## Stack
 - Monorepo (pnpm): shop (React+Vite+Wouter), api-server (Express+Drizzle), shared lib/api-client-react
-- Admin at /admin/login (password: AcholGatha@2025)
+- Admin panel accessible at /admin/login
