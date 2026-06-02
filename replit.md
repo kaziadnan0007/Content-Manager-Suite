@@ -1,54 +1,36 @@
-# ShopBD — E-Commerce Platform
+# [Project name]
 
-বাংলাদেশের সেরা অনলাইন ই-কমার্স প্ল্যাটফর্ম। Admin CMS, bKash/Rocket পেমেন্ট, এবং সম্পূর্ণ পণ্য ব্যবস্থাপনা সহ।
+_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — API server চালান (port 8080)
-- `pnpm --filter @workspace/shop run dev` — Frontend চালান
-- `pnpm run typecheck` — সব packages typecheck
-- `pnpm run build` — সব packages build
-- `pnpm --filter @workspace/api-spec run codegen` — OpenAPI থেকে hooks ও schemas তৈরি
-- `pnpm --filter @workspace/db run push` — DB schema push (dev only)
-- Required env: `DATABASE_URL`, `SESSION_SECRET`
-
-## Admin Access
-
-- URL: `/admin/login`
-- **Password: `Admin@1234`**
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm run typecheck` — full typecheck across all packages
+- `pnpm run build` — typecheck + build all packages
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- Frontend: React + Vite, wouter routing, TanStack Query, Tailwind CSS, shadcn/ui
-- API: Express 5, express-session, bcryptjs
+- API: Express 5
 - DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (zod/v4), drizzle-zod
+- Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
-- `lib/api-spec/openapi.yaml` — API contract (source of truth)
-- `lib/db/src/schema/` — Database schema files
-- `artifacts/api-server/src/routes/` — Backend route handlers
-- `artifacts/shop/src/` — Frontend React app
-- `artifacts/api-server/src/seed.ts` — Initial seed data
+_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
 
 ## Architecture decisions
 
-- Admin auth uses express-session (cookie-based), password-only login (bcrypt hashed)
-- Image upload: base64 JSON body → saved to `attached_assets/uploads/` → served via `/api/uploads/:filename`
-- Site settings stored as a single row in `site_settings` table, auto-created on first access
-- Orders store items as JSONB (snapshot of product data at order time)
-- Dark/light theme via `next-themes` ThemeProvider
+_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
 
 ## Product
 
-- **Customer storefront**: Hero banner carousel, category navigation, product search/filter, product detail with gallery, cart, checkout form with bKash/Rocket/COD payment
-- **Admin CMS Panel**: Dashboard stats, product manager (CRUD + image upload), category manager, order manager with status updates, banner manager, site settings (logo, social links, payment numbers, announcement bar)
-- **Social integration**: WhatsApp floating button, Facebook/Instagram links in footer
-- **Payment**: bKash, Rocket, Cash on Delivery — payment numbers shown on checkout
+_Describe the high-level user-facing capabilities of this app once they exist._
 
 ## User preferences
 
@@ -56,9 +38,7 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-- After schema changes: run `pnpm run typecheck:libs` before `pnpm --filter @workspace/api-server run typecheck`
-- Product images stored as URL array; upload returns `/api/uploads/<filename>`
-- Admin password is bcrypt-hashed in DB; to reset, delete the admin row and restart server
+_Populate as you build — sharp edges, "always run X before Y" rules._
 
 ## Pointers
 
