@@ -1,0 +1,14 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "-P8TS6HdVoBJrJCuEML_i"
+uri = "file://artifacts/shop-mobile/assets/images/icon.png"
+type = "image"
+title = "acholgatha-app-icon"
+
+[[generated]]
+id = "V9Z7EVvmIMUffIE9R4R_v"
+uri = "file://artifacts/shop-mobile/assets/images/splash-icon.png"
+type = "image"
+title = "acholgatha-splash"
