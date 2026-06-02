@@ -1,0 +1,3 @@
+- [AcholGatha Theme & Architecture](shopbd-architecture.md) — Electric Cyan (#00D4FF = HSL 192 100% 50%) primary, dark navy dark bg (HSL 218 48% 5%), BDT currency text only (never ৳ symbol)
+- [SMS Integration](sms-setup.md) — Shared sendSMS util at api-server/src/lib/sms.ts; Twilio env vars TWILIO_ACCOUNT_SID/AUTH_TOKEN/PHONE_NUMBER; falls back to console log when unconfigured
+- [Seed Strategy](seed-strategy.md) — Threshold-based seed (< 155 products); category upsert by slug; new products filtered by name; categories: furniture/grocery/health/automotive added in this session

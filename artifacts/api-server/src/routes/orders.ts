@@ -3,8 +3,22 @@ import { db } from "@workspace/db";
 import { ordersTable, productsTable } from "@workspace/db";
 import { eq, desc, count, and } from "drizzle-orm";
 import { notifier } from "../lib/notifier";
+import { sendSMS } from "../lib/sms";
 
 const router = Router();
+
+const STATUS_SMS: Record<string, (name: string, orderId: number, total: number) => string> = {
+  confirmed: (name, id) =>
+    `✅ AcholGatha: Hi ${name}, your Order #${id} has been CONFIRMED and is being prepared. Thank you for shopping with us!`,
+  processing: (name, id) =>
+    `📦 AcholGatha: Hi ${name}, your Order #${id} is now PROCESSING. We're packing your items carefully!`,
+  shipped: (name, id) =>
+    `🚚 AcholGatha: Great news ${name}! Your Order #${id} has been SHIPPED and is on its way. Track your order at acholgatha.com`,
+  delivered: (name, id, total) =>
+    `🎉 AcholGatha: Hi ${name}, your Order #${id} (BDT ${total.toLocaleString()}) has been DELIVERED! We hope you love it. Rate us & shop again at acholgatha.com`,
+  cancelled: (name, id) =>
+    `❌ AcholGatha: Hi ${name}, your Order #${id} has been CANCELLED. For queries call us or WhatsApp at 01700000000.`,
+};
 
 function mapOrder(o: typeof ordersTable.$inferSelect) {
   return {
@@ -12,13 +26,15 @@ function mapOrder(o: typeof ordersTable.$inferSelect) {
     customerName: o.customerName,
     customerPhone: o.customerPhone,
     customerAddress: o.customerAddress,
-    items: (o.items as Array<{
-      productId: number;
-      productName: string;
-      productImage: string | null;
-      quantity: number;
-      price: number;
-    }>).map((item) => ({
+    items: (
+      o.items as Array<{
+        productId: number;
+        productName: string;
+        productImage: string | null;
+        quantity: number;
+        price: number;
+      }>
+    ).map((item) => ({
       id: null,
       productId: item.productId,
       productName: item.productName,
@@ -50,7 +66,9 @@ router.get("/orders/track", async (req, res) => {
       .where(and(eq(ordersTable.id, id), eq(ordersTable.customerPhone, phone.trim())));
 
     if (!order) {
-      res.status(404).json({ error: "Order not found. Please check your order ID and phone number." });
+      res
+        .status(404)
+        .json({ error: "Order not found. Please check your order ID and phone number." });
       return;
     }
     res.json(mapOrder(order));
@@ -72,7 +90,13 @@ router.get("/orders", async (req, res) => {
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [orders, totalResult] = await Promise.all([
-      db.select().from(ordersTable).where(where).orderBy(desc(ordersTable.createdAt)).limit(limitNum).offset(offset),
+      db
+        .select()
+        .from(ordersTable)
+        .where(where)
+        .orderBy(desc(ordersTable.createdAt))
+        .limit(limitNum)
+        .offset(offset),
       db.select({ total: count() }).from(ordersTable).where(where),
     ]);
 
@@ -106,13 +130,6 @@ router.post("/orders", async (req, res) => {
       return;
     }
 
-    const productIds = body.items.map((i) => i.productId);
-    const products = await db.select().from(productsTable).where(
-      productIds.length === 1
-        ? eq(productsTable.id, productIds[0]!)
-        : eq(productsTable.id, productIds[0]!)
-    );
-
     const allProducts = await db.select().from(productsTable);
     const productMap = new Map(allProducts.map((p) => [p.id, p]));
 
@@ -130,18 +147,21 @@ router.post("/orders", async (req, res) => {
       };
     });
 
-    const [order] = await db.insert(ordersTable).values({
-      customerName: body.customerName,
-      customerPhone: body.customerPhone,
-      customerAddress: body.customerAddress ?? null,
-      items: orderItems,
-      total: String(total),
-      status: "pending",
-      paymentMethod: body.paymentMethod,
-      paymentNumber: body.paymentNumber ?? null,
-      transactionId: body.transactionId ?? null,
-      note: body.note ?? null,
-    }).returning();
+    const [order] = await db
+      .insert(ordersTable)
+      .values({
+        customerName: body.customerName,
+        customerPhone: body.customerPhone,
+        customerAddress: body.customerAddress ?? null,
+        items: orderItems,
+        total: String(total),
+        status: "pending",
+        paymentMethod: body.paymentMethod,
+        paymentNumber: body.paymentNumber ?? null,
+        transactionId: body.transactionId ?? null,
+        note: body.note ?? null,
+      })
+      .returning();
 
     notifier.broadcast({
       type: "new_order",
@@ -153,6 +173,14 @@ router.post("/orders", async (req, res) => {
       paymentMethod: order!.paymentMethod,
       timestamp: new Date().toISOString(),
     });
+
+    // Send order confirmation SMS to customer
+    try {
+      const confirmMsg = `🛒 AcholGatha: Hi ${order!.customerName}, your Order #${order!.id} has been received! Total: BDT ${total.toLocaleString()}. We'll confirm soon. Thank you!`;
+      await sendSMS(order!.customerPhone, confirmMsg);
+    } catch (smsErr) {
+      req.log.warn({ smsErr }, "Order confirmation SMS failed");
+    }
 
     res.status(201).json(mapOrder(order!));
   } catch (err) {
@@ -184,15 +212,30 @@ router.patch("/orders/:id", async (req, res) => {
       res.status(400).json({ error: "Status is required" });
       return;
     }
+
     const [order] = await db
       .update(ordersTable)
       .set({ status })
       .where(eq(ordersTable.id, id))
       .returning();
+
     if (!order) {
       res.status(404).json({ error: "Order not found" });
       return;
     }
+
+    // Send SMS notification to customer when admin updates status
+    const smsFn = STATUS_SMS[status];
+    if (smsFn && order.customerPhone) {
+      try {
+        const message = smsFn(order.customerName, order.id, Number(order.total));
+        const { sent } = await sendSMS(order.customerPhone, message);
+        req.log.info({ orderId: id, status, phone: order.customerPhone, sent }, "Order status SMS");
+      } catch (smsErr) {
+        req.log.warn({ smsErr }, "Order status SMS failed (non-fatal)");
+      }
+    }
+
     res.json(mapOrder(order));
   } catch (err) {
     req.log.error({ err }, "Update order error");

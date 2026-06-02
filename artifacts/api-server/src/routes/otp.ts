@@ -2,39 +2,12 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { otpTable } from "@workspace/db";
 import { eq, and, gt } from "drizzle-orm";
+import { sendSMS } from "../lib/sms";
 
 const router = Router();
 
 function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-async function sendSMS(phone: string, message: string): Promise<{ sent: boolean; demoCode?: string }> {
-  const accountSid = process.env["TWILIO_ACCOUNT_SID"];
-  const authToken = process.env["TWILIO_AUTH_TOKEN"];
-  const fromPhone = process.env["TWILIO_PHONE_NUMBER"];
-
-  if (accountSid && authToken && fromPhone) {
-    try {
-      const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-      const body = new URLSearchParams({ To: phone, From: fromPhone, Body: message });
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: "Basic " + Buffer.from(`${accountSid}:${authToken}`).toString("base64"),
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: body.toString(),
-      });
-      if (response.ok) return { sent: true };
-    } catch (err) {
-      console.error("Twilio SMS error:", err);
-    }
-  }
-
-  console.log(`[OTP DEMO] SMS to ${phone}: ${message}`);
-  const match = message.match(/\d{6}/);
-  return { sent: false, demoCode: match ? match[0] : undefined };
 }
 
 router.post("/otp/send", async (req, res) => {

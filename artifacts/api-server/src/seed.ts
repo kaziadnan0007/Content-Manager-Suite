@@ -40,27 +40,34 @@ export async function seedIfEmpty() {
       logger.info("Site settings seeded for AcholGatha");
     }
 
-    // Seed categories
-    const existingCats = await db.select().from(categoriesTable).limit(1);
-    if (existingCats.length === 0) {
-      await db.insert(categoriesTable).values([
-        { name: "Electronics", slug: "electronics" },
-        { name: "Clothing", slug: "clothing" },
-        { name: "Beauty", slug: "beauty" },
-        { name: "Home Appliances", slug: "home-appliances" },
-        { name: "Sports", slug: "sports" },
-        { name: "Bags", slug: "bags" },
-        { name: "Shoes", slug: "shoes" },
-        { name: "Watches", slug: "watches" },
-        { name: "Kids", slug: "kids" },
-        { name: "Books", slug: "books" },
-      ]);
-      logger.info("Categories seeded");
+    // Seed categories — upsert all required categories
+    const allRequiredCats = [
+      { name: "Electronics", slug: "electronics" },
+      { name: "Clothing", slug: "clothing" },
+      { name: "Beauty", slug: "beauty" },
+      { name: "Home Appliances", slug: "home-appliances" },
+      { name: "Sports", slug: "sports" },
+      { name: "Bags", slug: "bags" },
+      { name: "Shoes", slug: "shoes" },
+      { name: "Watches", slug: "watches" },
+      { name: "Kids", slug: "kids" },
+      { name: "Books", slug: "books" },
+      { name: "Furniture", slug: "furniture" },
+      { name: "Grocery", slug: "grocery" },
+      { name: "Health", slug: "health" },
+      { name: "Automotive", slug: "automotive" },
+    ];
+    const existingCats = await db.select().from(categoriesTable);
+    const existingSlugs = new Set(existingCats.map((c) => c.slug));
+    const missingCats = allRequiredCats.filter((c) => !existingSlugs.has(c.slug));
+    if (missingCats.length > 0) {
+      await db.insert(categoriesTable).values(missingCats);
+      logger.info(`Categories seeded: added ${missingCats.map((c) => c.slug).join(", ")}`);
     }
 
-    // Seed products — expand to 84+ products if we have fewer than 80
+    // Seed products — expand to 155+ products
     const existingProducts = await db.select().from(productsTable);
-    if (existingProducts.length < 80) {
+    if (existingProducts.length < 155) {
       const cats = await db.select().from(categoriesTable);
       const catMap = new Map(cats.map((c) => [c.slug, c.id]));
 
@@ -645,6 +652,413 @@ export async function seedIfEmpty() {
           categoryId: catMap.get("kids") ?? null, stock: 200, featured: false, badge: null,
         },
 
+        // ── Furniture ────────────────────────────────────────────────────────
+        {
+          name: "Ergonomic Office Chair Mesh Back",
+          description: "Breathable mesh office chair. Lumbar support, adjustable armrests, 360° swivel.",
+          price: "8500", comparePrice: "13000",
+          images: ["https://images.unsplash.com/photo-1592078615290-033ee584e267?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("furniture") ?? null, stock: 20, featured: true, badge: "Office",
+        },
+        {
+          name: "Wooden Study Table 120cm",
+          description: "Solid wood study table. 120x60cm, built-in storage shelves, cable management hole.",
+          price: "6500", comparePrice: "10000",
+          images: ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("furniture") ?? null, stock: 15, featured: false, badge: null,
+        },
+        {
+          name: "3-Seater Sofa Set Modern",
+          description: "Contemporary 3-seater sofa. High-density foam cushions, durable fabric upholstery.",
+          price: "22000", comparePrice: "35000",
+          images: ["https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("furniture") ?? null, stock: 8, featured: true, badge: "Premium",
+        },
+        {
+          name: "Bookshelf 5-Tier Wooden",
+          description: "5-tier bookshelf in solid pine. 180x80x30cm, holds up to 50kg per shelf.",
+          price: "4200", comparePrice: "6500",
+          images: ["https://images.unsplash.com/photo-1594620302200-9a762244a156?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("furniture") ?? null, stock: 25, featured: false, badge: "Storage",
+        },
+        {
+          name: "King Size Bed Frame with Headboard",
+          description: "King size bed frame in walnut finish. Upholstered headboard, slat support, no box spring needed.",
+          price: "18000", comparePrice: "28000",
+          images: ["https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("furniture") ?? null, stock: 10, featured: true, badge: "Luxury",
+        },
+        {
+          name: "Coffee Table Glass Top Round",
+          description: "Round glass top coffee table. Tempered glass, chrome legs, 90cm diameter.",
+          price: "3800", comparePrice: "6000",
+          images: ["https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("furniture") ?? null, stock: 18, featured: false, badge: null,
+        },
+        {
+          name: "Wardrobe 4-Door Sliding",
+          description: "4-door sliding wardrobe. Mirror panels, multiple compartments, hanging rail included.",
+          price: "15000", comparePrice: "22000",
+          images: ["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("furniture") ?? null, stock: 12, featured: false, badge: "Storage",
+        },
+        {
+          name: "Dining Table Set 6-Seater",
+          description: "6-seater dining table with chairs. Solid wood top, padded chairs, classic design.",
+          price: "25000", comparePrice: "38000",
+          images: ["https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("furniture") ?? null, stock: 6, featured: false, badge: "Set",
+        },
+
+        // ── Grocery ───────────────────────────────────────────────────────────
+        {
+          name: "Premium Basmati Rice 5kg",
+          description: "Long-grain aged Basmati rice. Fragrant, non-sticky, perfect for biriyani and pulao.",
+          price: "650", comparePrice: "850",
+          images: ["https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("grocery") ?? null, stock: 500, featured: false, badge: "Popular",
+        },
+        {
+          name: "Cold Pressed Mustard Oil 1L",
+          description: "100% pure cold-pressed mustard oil. No additives, traditional wooden press method.",
+          price: "280", comparePrice: "380",
+          images: ["https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("grocery") ?? null, stock: 300, featured: false, badge: "Organic",
+        },
+        {
+          name: "Sunflower Honey 500g Pure",
+          description: "Raw unfiltered sunflower honey. 100% natural, no artificial sweeteners, rich flavor.",
+          price: "480", comparePrice: "700",
+          images: ["https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("grocery") ?? null, stock: 200, featured: false, badge: "Natural",
+        },
+        {
+          name: "Organic Green Tea 100 Bags",
+          description: "Premium organic green tea bags. Rich in antioxidants, light and refreshing flavor.",
+          price: "350", comparePrice: "550",
+          images: ["https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("grocery") ?? null, stock: 400, featured: false, badge: "Healthy",
+        },
+        {
+          name: "Mixed Dry Fruits 500g Premium Pack",
+          description: "Cashews, almonds, raisins, walnuts. Premium quality, no added salt or sugar.",
+          price: "900", comparePrice: "1300",
+          images: ["https://images.unsplash.com/photo-1546548970-71785318a17b?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("grocery") ?? null, stock: 150, featured: true, badge: "Premium",
+        },
+        {
+          name: "Extra Virgin Olive Oil 750ml",
+          description: "Cold-pressed extra virgin olive oil. First pressing, acidity <0.5%, ideal for salads.",
+          price: "750", comparePrice: "1100",
+          images: ["https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("grocery") ?? null, stock: 200, featured: false, badge: "Imported",
+        },
+        {
+          name: "Oats Quick Cook 1kg",
+          description: "Rolled oats for quick cooking. High fiber, no added sugar, gluten-free option.",
+          price: "220", comparePrice: "320",
+          images: ["https://images.unsplash.com/photo-1614961233913-a5113a4a34ed?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("grocery") ?? null, stock: 600, featured: false, badge: null,
+        },
+        {
+          name: "Himalayan Pink Salt 1kg",
+          description: "100% natural Himalayan pink salt. Mineral-rich, unrefined, food grade.",
+          price: "180", comparePrice: "280",
+          images: ["https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("grocery") ?? null, stock: 800, featured: false, badge: "Natural",
+        },
+
+        // ── Health & Personal Care ────────────────────────────────────────────
+        {
+          name: "Blood Pressure Monitor Digital",
+          description: "Automatic upper arm BP monitor. Large LCD, irregular heartbeat detection, 2-user memory.",
+          price: "2200", comparePrice: "3500",
+          images: ["https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("health") ?? null, stock: 60, featured: true, badge: "Medical",
+        },
+        {
+          name: "Digital Thermometer Infrared",
+          description: "No-touch infrared thermometer. 0.5-second reading, fever alarm, memory recall.",
+          price: "850", comparePrice: "1400",
+          images: ["https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("health") ?? null, stock: 100, featured: false, badge: "Fast",
+        },
+        {
+          name: "Multivitamin Tablets 60pcs Daily",
+          description: "Complete daily multivitamin. 23 essential vitamins & minerals, no artificial colors.",
+          price: "550", comparePrice: "900",
+          images: ["https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("health") ?? null, stock: 200, featured: false, badge: "Wellness",
+        },
+        {
+          name: "Pulse Oximeter Fingertip",
+          description: "Fingertip pulse oximeter. SpO2 + heart rate, OLED display, battery included.",
+          price: "650", comparePrice: "1100",
+          images: ["https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("health") ?? null, stock: 80, featured: false, badge: null,
+        },
+        {
+          name: "Vitamin C Effervescent Tablets 20s",
+          description: "1000mg Vitamin C effervescent tablets. Immune support, orange flavor.",
+          price: "280", comparePrice: "450",
+          images: ["https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("health") ?? null, stock: 300, featured: false, badge: "Immune",
+        },
+        {
+          name: "Electric Toothbrush Sonic 32000rpm",
+          description: "Sonic electric toothbrush. 32000 strokes/min, 5 cleaning modes, 2-min timer, USB charge.",
+          price: "1800", comparePrice: "2900",
+          images: ["https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("health") ?? null, stock: 70, featured: true, badge: "Sonic",
+        },
+        {
+          name: "First Aid Kit 100-piece Complete",
+          description: "100-piece first aid kit. Bandages, antiseptic wipes, scissors, tweezers, in carry case.",
+          price: "750", comparePrice: "1200",
+          images: ["https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("health") ?? null, stock: 150, featured: false, badge: "Safety",
+        },
+        {
+          name: "Massage Gun Deep Tissue 20-Speed",
+          description: "Percussive therapy massage gun. 20 speed levels, 6 heads, 3200rpm, 8hr battery.",
+          price: "3200", comparePrice: "5500",
+          images: ["https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("health") ?? null, stock: 40, featured: true, badge: "Recovery",
+        },
+
+        // ── Automotive ────────────────────────────────────────────────────────
+        {
+          name: "Car Dash Camera 4K WiFi",
+          description: "4K UHD dash cam with WiFi. 170° wide angle, night vision, loop recording, G-sensor.",
+          price: "4500", comparePrice: "7000",
+          images: ["https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("automotive") ?? null, stock: 35, featured: true, badge: "4K",
+        },
+        {
+          name: "Car Vacuum Cleaner 12V Portable",
+          description: "Portable 12V car vacuum. 120W suction, HEPA filter, 5-meter cord, multiple attachments.",
+          price: "1200", comparePrice: "2000",
+          images: ["https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("automotive") ?? null, stock: 80, featured: false, badge: "Portable",
+        },
+        {
+          name: "Car Phone Holder Dashboard Magnetic",
+          description: "Magnetic car phone holder. 360° rotation, strong magnet, dashboard & vent mount.",
+          price: "450", comparePrice: "750",
+          images: ["https://images.unsplash.com/photo-1581591524425-c7e0978865fc?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("automotive") ?? null, stock: 200, featured: false, badge: "Magnetic",
+        },
+        {
+          name: "Car Air Purifier USB Ionizer",
+          description: "USB car air purifier with negative ion generator. Removes dust, smoke, bad odors.",
+          price: "650", comparePrice: "1100",
+          images: ["https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("automotive") ?? null, stock: 120, featured: false, badge: "Clean Air",
+        },
+        {
+          name: "Tire Inflator Portable Electric",
+          description: "Portable electric tire inflator. 150PSI, auto shut-off, digital display, LED light.",
+          price: "1800", comparePrice: "2800",
+          images: ["https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("automotive") ?? null, stock: 50, featured: false, badge: "Auto",
+        },
+        {
+          name: "Car Seat Cover Set Universal",
+          description: "Universal car seat cover set. 9-piece, waterproof PU leather, fits most sedan & SUV.",
+          price: "2800", comparePrice: "4500",
+          images: ["https://images.unsplash.com/photo-1616455579100-2ceaa4eb6d37?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("automotive") ?? null, stock: 45, featured: false, badge: "Full Set",
+        },
+
+        // ── More Electronics ──────────────────────────────────────────────────
+        {
+          name: "Mechanical Gaming Keyboard RGB",
+          description: "TKL mechanical keyboard. Blue switches, per-key RGB, anti-ghosting, USB-C detachable.",
+          price: "3200", comparePrice: "5200",
+          images: ["https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("electronics") ?? null, stock: 55, featured: true, badge: "Gaming",
+        },
+        {
+          name: "USB-C Hub 7-in-1 Multiport",
+          description: "7-in-1 USB-C hub. 4K HDMI, 100W PD, 3x USB-A, SD/TF card reader, plug and play.",
+          price: "1800", comparePrice: "2800",
+          images: ["https://images.unsplash.com/photo-1625314897518-bb4fe6e95229?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("electronics") ?? null, stock: 90, featured: false, badge: "7-in-1",
+        },
+        {
+          name: "Wireless Charging Pad 15W Fast",
+          description: "15W fast wireless charging pad. Qi certified, compatible with iPhone & Android.",
+          price: "850", comparePrice: "1400",
+          images: ["https://images.unsplash.com/photo-1601997433577-9a4b46498cd5?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("electronics") ?? null, stock: 120, featured: false, badge: "Fast",
+        },
+        {
+          name: "Portable Power Bank 20000mAh",
+          description: "20000mAh power bank. 65W PD fast charge, dual USB-A, 1 USB-C, digital display.",
+          price: "2200", comparePrice: "3500",
+          images: ["https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("electronics") ?? null, stock: 80, featured: true, badge: "20000mAh",
+        },
+        {
+          name: "Gaming Mouse 16000 DPI RGB",
+          description: "16000 DPI gaming mouse. 7 programmable buttons, RGB lighting, 1ms response time.",
+          price: "1500", comparePrice: "2400",
+          images: ["https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("electronics") ?? null, stock: 70, featured: false, badge: "Gaming",
+        },
+        {
+          name: "4K Action Camera Waterproof 60fps",
+          description: "4K 60fps action camera. Waterproof to 30m, image stabilization, WiFi, includes mount.",
+          price: "5500", comparePrice: "8500",
+          images: ["https://images.unsplash.com/photo-1607462109225-6b64ae2dd3cb?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("electronics") ?? null, stock: 30, featured: true, badge: "4K",
+        },
+        {
+          name: "Smart LED Strip 5m RGB WiFi",
+          description: "5m WiFi smart LED strip. 16M colors, app control, voice control, music sync.",
+          price: "1200", comparePrice: "2000",
+          images: ["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("electronics") ?? null, stock: 100, featured: false, badge: "Smart",
+        },
+
+        // ── More Clothing ─────────────────────────────────────────────────────
+        {
+          name: "Formal Business Suit 2-Piece Men",
+          description: "Tailored 2-piece formal suit. Slim fit, premium wool blend, jacket + trousers.",
+          price: "5500", comparePrice: "8500",
+          images: ["https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("clothing") ?? null, stock: 30, featured: true, badge: "Formal",
+        },
+        {
+          name: "Kameez Shalwar Eid Collection",
+          description: "Premium cotton kameez shalwar. Embroidered collar, festival cut, sizes S to XXL.",
+          price: "2200", comparePrice: "3500",
+          images: ["https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("clothing") ?? null, stock: 60, featured: true, badge: "Eid",
+        },
+        {
+          name: "Hoodie Pullover Fleece Unisex",
+          description: "Warm fleece pullover hoodie. Kangaroo pocket, adjustable drawstring, machine washable.",
+          price: "1200", comparePrice: "1900",
+          images: ["https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("clothing") ?? null, stock: 100, featured: false, badge: "Cozy",
+        },
+        {
+          name: "Denim Jacket Classic Men",
+          description: "Classic 100% cotton denim jacket. Button closure, chest pockets, regular fit.",
+          price: "2800", comparePrice: "4500",
+          images: ["https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("clothing") ?? null, stock: 45, featured: false, badge: null,
+        },
+        {
+          name: "Saree Silk Printed Ladies",
+          description: "Premium silk printed saree. 6.5 meters, vibrant colors, elegant border, blouse piece included.",
+          price: "3500", comparePrice: "5500",
+          images: ["https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("clothing") ?? null, stock: 40, featured: true, badge: "Silk",
+        },
+
+        // ── More Watches ──────────────────────────────────────────────────────
+        {
+          name: "Smart Watch Fitness Tracker Pro",
+          description: "Fitness smartwatch. Heart rate, SpO2, GPS, 7-day battery, 50m waterproof.",
+          price: "4200", comparePrice: "6500",
+          images: ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("watches") ?? null, stock: 50, featured: true, badge: "Smart",
+        },
+        {
+          name: "Minimalist Leather Watch Unisex",
+          description: "Ultra-thin minimalist watch. Genuine leather strap, Japanese quartz movement, 3ATM water resistant.",
+          price: "2800", comparePrice: "4500",
+          images: ["https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("watches") ?? null, stock: 40, featured: false, badge: "Minimal",
+        },
+
+        // ── More Beauty ───────────────────────────────────────────────────────
+        {
+          name: "Hair Dryer Ionic 2200W Salon",
+          description: "Professional ionic hair dryer. 2200W, 3 heat settings, cool shot, concentrator nozzle.",
+          price: "2200", comparePrice: "3500",
+          images: ["https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("beauty") ?? null, stock: 60, featured: true, badge: "Salon",
+        },
+        {
+          name: "Lip Color Kit 12-Shade Matte",
+          description: "12-shade long-lasting matte lip color kit. Waterproof, 8-hour wear, velvet finish.",
+          price: "750", comparePrice: "1200",
+          images: ["https://images.unsplash.com/photo-1586495777744-4e6b21534c06?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("beauty") ?? null, stock: 120, featured: false, badge: "Kit",
+        },
+        {
+          name: "Vitamin C Serum 30ml Anti-Aging",
+          description: "20% Vitamin C brightening serum. Fades dark spots, boosts collagen, hyaluronic acid.",
+          price: "1200", comparePrice: "1900",
+          images: ["https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("beauty") ?? null, stock: 90, featured: true, badge: "Vitamin C",
+        },
+
+        // ── More Kids ─────────────────────────────────────────────────────────
+        {
+          name: "LEGO-Style Building Set 500pcs",
+          description: "500-piece creative building block set. Compatible with major brands, STEM learning.",
+          price: "1500", comparePrice: "2400",
+          images: ["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("kids") ?? null, stock: 80, featured: true, badge: "STEM",
+        },
+        {
+          name: "Baby Walker Adjustable Safety",
+          description: "Adjustable baby walker with safety harness. Non-slip wheels, toy tray, seat height adjustable.",
+          price: "2800", comparePrice: "4500",
+          images: ["https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("kids") ?? null, stock: 30, featured: false, badge: "Safety",
+        },
+
+        // ── More Sports ───────────────────────────────────────────────────────
+        {
+          name: "Dumbbell Set Adjustable 20kg",
+          description: "Adjustable dumbbell set 2x10kg. Quick-lock mechanism, chrome knurled handle, space-saving.",
+          price: "4500", comparePrice: "7000",
+          images: ["https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("sports") ?? null, stock: 35, featured: true, badge: "Gym",
+        },
+        {
+          name: "Treadmill Electric Foldable 1.5HP",
+          description: "1.5HP electric foldable treadmill. 12 preset programs, LCD display, up to 10km/h.",
+          price: "18000", comparePrice: "28000",
+          images: ["https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("sports") ?? null, stock: 12, featured: true, badge: "Cardio",
+        },
+        {
+          name: "Cycling Helmet MTB Adults",
+          description: "Mountain bike helmet. 24-vent design, adjustable fit, EPS foam liner, CE certified.",
+          price: "1800", comparePrice: "2800",
+          images: ["https://images.unsplash.com/photo-1591638246754-93d3e1fbe61f?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("sports") ?? null, stock: 55, featured: false, badge: "Safety",
+        },
+
+        // ── More Home Appliances ──────────────────────────────────────────────
+        {
+          name: "Rice Cooker Digital 1.8L",
+          description: "Digital 1.8L rice cooker. 8 cooking functions, keep warm, non-stick bowl, steam basket.",
+          price: "3500", comparePrice: "5500",
+          images: ["https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("home-appliances") ?? null, stock: 65, featured: true, badge: "Digital",
+        },
+        {
+          name: "Electric Kettle 1.7L Stainless Steel",
+          description: "1.7L stainless steel electric kettle. 2200W, auto shut-off, boil-dry protection.",
+          price: "1400", comparePrice: "2200",
+          images: ["https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("home-appliances") ?? null, stock: 90, featured: false, badge: null,
+        },
+        {
+          name: "Microwave Oven 20L Solo",
+          description: "20L solo microwave oven. 700W, 5 power levels, digital timer, child lock.",
+          price: "6500", comparePrice: "9500",
+          images: ["https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&h=500&fit=crop"],
+          categoryId: catMap.get("home-appliances") ?? null, stock: 30, featured: false, badge: null,
+        },
+
         // ── Books ─────────────────────────────────────────────────────────────
         {
           name: "Bangla Novel Collection 5 Books",
@@ -686,7 +1100,7 @@ export async function seedIfEmpty() {
       const newProducts = allProducts.filter((p) => !existingNames.has(p.name));
       if (newProducts.length > 0) {
         await db.insert(productsTable).values(newProducts);
-        logger.info(`Products seeded: ${newProducts.length} new products added (total target: 84)`);
+        logger.info(`Products seeded: ${newProducts.length} new products added (total target: 155+)`);
       }
     }
 
