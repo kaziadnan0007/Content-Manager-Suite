@@ -1,0 +1,17 @@
+{
+  "buildCommand": "pnpm install && pnpm --filter @workspace/db run build 2>/dev/null || true && cd artifacts/shop && pnpm run build",
+  "outputDirectory": "artifacts/shop/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}

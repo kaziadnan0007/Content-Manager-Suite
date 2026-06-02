@@ -1,0 +1,1 @@
+- [AcholGatha brand setup](acholgatha-brand.md) — Brand renamed from ShopBD to AcholGatha; vibrant orange-red primary color (hsl 14 100% 52%), Bengali UI, 26 seeded products, admin password AcholGatha@2025.
