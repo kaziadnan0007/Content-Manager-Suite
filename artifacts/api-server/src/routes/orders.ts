@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { ordersTable, productsTable } from "@workspace/db";
 import { eq, desc, count, and } from "drizzle-orm";
+import { notifier } from "../lib/notifier";
 
 const router = Router();
 
@@ -141,6 +142,17 @@ router.post("/orders", async (req, res) => {
       transactionId: body.transactionId ?? null,
       note: body.note ?? null,
     }).returning();
+
+    notifier.broadcast({
+      type: "new_order",
+      orderId: order!.id,
+      customerName: order!.customerName,
+      customerPhone: order!.customerPhone,
+      total,
+      itemCount: orderItems.reduce((s, i) => s + i.quantity, 0),
+      paymentMethod: order!.paymentMethod,
+      timestamp: new Date().toISOString(),
+    });
 
     res.status(201).json(mapOrder(order!));
   } catch (err) {

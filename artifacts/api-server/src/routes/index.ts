@@ -8,6 +8,7 @@ import settingsRouter from "./settings";
 import uploadsRouter from "./uploads";
 import dashboardRouter from "./dashboard";
 import otpRouter from "./otp";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(settingsRouter);
 router.use(uploadsRouter);
 router.use(dashboardRouter);
 router.use(otpRouter);
+router.use(notificationsRouter);
 
 export default router;
