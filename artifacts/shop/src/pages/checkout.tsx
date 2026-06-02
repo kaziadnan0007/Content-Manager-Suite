@@ -11,6 +11,7 @@ import { useState, useRef } from "react";
 import { Trash2, Copy, CheckCircle2, ShieldCheck, Phone, Loader2, Lock, MapPin, Truck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/auth-context";
+import { BD_DISTRICTS, DHAKA_ZONE_DISTRICTS } from "@/lib/bd-districts";
 
 type DeliveryZone = "inside-dhaka" | "outside-dhaka";
 
@@ -37,9 +38,17 @@ export function CheckoutPage() {
     note: "",
   });
 
-  const [deliveryZone, setDeliveryZone] = useState<DeliveryZone>("inside-dhaka");
+  const [district, setDistrict] = useState(customer?.city || "");
+  const [deliveryZone, setDeliveryZone] = useState<DeliveryZone>(
+    customer?.city && !DHAKA_ZONE_DISTRICTS.has(customer.city) ? "outside-dhaka" : "inside-dhaka"
+  );
   const deliveryCharge = DELIVERY_CHARGE[deliveryZone];
   const grandTotal = totalPrice + deliveryCharge;
+
+  const handleDistrictChange = (val: string) => {
+    setDistrict(val);
+    setDeliveryZone(DHAKA_ZONE_DISTRICTS.has(val) ? "inside-dhaka" : "outside-dhaka");
+  };
 
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -219,37 +228,54 @@ export function CheckoutPage() {
                     {otpStep === "idle" && otpError && <p className="text-sm text-destructive mt-1">{otpError}</p>}
                   </div>
 
-                  {/* Delivery Zone Selector */}
+                  {/* District selector — auto-sets delivery zone */}
                   <div className="space-y-2">
                     <Label className="flex items-center gap-1.5 font-semibold">
-                      <Truck className="w-4 h-4 text-primary" /> Delivery Zone *
+                      <MapPin className="w-4 h-4 text-primary" /> District *
                     </Label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {(["inside-dhaka", "outside-dhaka"] as DeliveryZone[]).map(zone => (
-                        <div key={zone}
-                          onClick={() => setDeliveryZone(zone)}
-                          className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${deliveryZone === zone ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/40"}`}>
-                          <div className="flex items-center gap-2 mb-1">
-                            <MapPin className={`w-4 h-4 ${deliveryZone === zone ? "text-primary" : "text-muted-foreground"}`} />
-                            <span className={`font-bold text-sm ${deliveryZone === zone ? "text-primary" : ""}`}>
-                              {zone === "inside-dhaka" ? "Inside Dhaka" : "Outside Dhaka"}
-                            </span>
-                          </div>
-                          <div className={`text-xl font-black ${deliveryZone === zone ? "text-primary" : "text-foreground"}`}>
-                            BDT {DELIVERY_CHARGE[zone]}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {zone === "inside-dhaka" ? "Dhaka city & suburbs" : "All other districts"}
-                          </p>
+                    <select
+                      required
+                      value={district}
+                      onChange={e => handleDistrictChange(e.target.value)}
+                      className="h-11 w-full rounded-lg border-2 border-input bg-background px-3 text-sm focus:outline-none focus:border-primary transition-colors">
+                      <option value="">— Select your district —</option>
+                      {BD_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                    {district && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Truck className="w-3.5 h-3.5" />
+                        Auto-detected: <span className={`font-bold ${deliveryZone === "inside-dhaka" ? "text-green-600" : "text-orange-500"}`}>
+                          {deliveryZone === "inside-dhaka" ? "Inside Dhaka (BDT 60)" : "Outside Dhaka (BDT 120)"}
+                        </span>
+                        <button type="button" onClick={() => setDeliveryZone(z => z === "inside-dhaka" ? "outside-dhaka" : "inside-dhaka")}
+                          className="ml-1 underline text-primary">change</button>
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Delivery Zone Cards */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {(["inside-dhaka", "outside-dhaka"] as DeliveryZone[]).map(zone => (
+                      <div key={zone}
+                        onClick={() => setDeliveryZone(zone)}
+                        className={`border-2 rounded-xl p-3 cursor-pointer transition-all ${deliveryZone === zone ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/40 opacity-60"}`}>
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <MapPin className={`w-3.5 h-3.5 ${deliveryZone === zone ? "text-primary" : "text-muted-foreground"}`} />
+                          <span className={`font-bold text-xs ${deliveryZone === zone ? "text-primary" : ""}`}>
+                            {zone === "inside-dhaka" ? "Inside Dhaka" : "Outside Dhaka"}
+                          </span>
                         </div>
-                      ))}
-                    </div>
+                        <div className={`text-lg font-black ${deliveryZone === zone ? "text-primary" : "text-foreground"}`}>
+                          BDT {DELIVERY_CHARGE[zone]}
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="customerAddress">Detailed Address *</Label>
                     <Textarea id="customerAddress" required rows={3}
-                      placeholder="House, Road, Area, District"
+                      placeholder="House No., Road, Area, Thana"
                       value={formData.customerAddress}
                       onChange={e => setFormData({ ...formData, customerAddress: e.target.value })} />
                   </div>

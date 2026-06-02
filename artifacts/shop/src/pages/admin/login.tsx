@@ -84,7 +84,7 @@ export function AdminLoginPage() {
               </Button>
             </form>
             <p className="text-center text-xs text-muted-foreground mt-5">
-              Default password: <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-primary">AcholGatha@2025</code>
+              Contact the site owner for access credentials.
             </p>
           </CardContent>
         </Card>

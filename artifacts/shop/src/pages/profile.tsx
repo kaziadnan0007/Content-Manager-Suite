@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/components/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { User, Phone, Mail, MapPin, Building2, Package, Heart, LogOut, CheckCircle2, Pencil, ChevronRight, Shield } from "lucide-react";
+import { BD_DISTRICTS } from "@/lib/bd-districts";
 
 export function ProfilePage() {
   const { customer, token, logout, updateCustomer } = useAuth();
@@ -113,8 +114,14 @@ export function ProfilePage() {
                     <Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} className="h-10" placeholder="House, Road, Area" />
                   </div>
                   <div className="space-y-2">
-                    <Label className="font-semibold text-sm">City / District</Label>
-                    <Input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} className="h-10" placeholder="Dhaka, Chittagong…" />
+                    <Label className="font-semibold text-sm">District</Label>
+                    <select
+                      value={form.city}
+                      onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                      <option value="">— Select District —</option>
+                      {BD_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
                   </div>
                   {err && <p className="text-sm text-destructive bg-destructive/8 rounded-lg px-3 py-2">{err}</p>}
                   <div className="flex gap-3 pt-1">
