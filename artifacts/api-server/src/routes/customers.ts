@@ -3,11 +3,18 @@ import { db } from "@workspace/db";
 import { customers } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
 const router = Router();
 
-function hashPassword(password: string): string {
-  return crypto.createHash("sha256").update(password + "acholgatha-secure-2025").digest("hex");
+const BCRYPT_ROUNDS = 10;
+
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, BCRYPT_ROUNDS);
+}
+
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }
 
 function generateToken(): string {
@@ -52,9 +59,9 @@ router.post("/customers/register", async (req, res) => {
       return res.status(409).json({ error: "Phone number already registered. Please sign in." });
     }
     if (existing.length > 0) {
-      await db.update(customers).set({ name, email: email || null, passwordHash: hashPassword(password) }).where(eq(customers.phone, phone));
+      await db.update(customers).set({ name, email: email || null, passwordHash: await hashPassword(password) }).where(eq(customers.phone, phone));
     } else {
-      await db.insert(customers).values({ name, phone, email: email || null, passwordHash: hashPassword(password), isVerified: false });
+      await db.insert(customers).values({ name, phone, email: email || null, passwordHash: await hashPassword(password), isVerified: false });
     }
     res.json({ success: true, message: "Account created. Please verify your phone with OTP." });
   } catch {
@@ -91,7 +98,8 @@ router.post("/customers/login", async (req, res) => {
     const [customer] = await db.select().from(customers).where(eq(customers.phone, phone)).limit(1);
     if (!customer) return res.status(401).json({ error: "No account found with this phone number" });
     if (!customer.isVerified) return res.status(403).json({ error: "Phone not verified. Please verify your account first.", needsVerification: true, phone });
-    if (customer.passwordHash !== hashPassword(password)) return res.status(401).json({ error: "Incorrect password" });
+    const passwordOk = customer.passwordHash ? await verifyPassword(password, customer.passwordHash) : false;
+    if (!passwordOk) return res.status(401).json({ error: "Incorrect password" });
     const token = generateToken();
     await db.update(customers).set({ sessionToken: token }).where(eq(customers.id, customer.id));
     res.json({
@@ -143,14 +151,14 @@ router.post("/customers/reset-password", async (req, res) => {
   try {
     const token = generateToken();
     const [customer] = await db.update(customers)
-      .set({ passwordHash: hashPassword(newPassword), sessionToken: token, isVerified: true })
+      .set({ passwordHash: await hashPassword(newPassword), sessionToken: token, isVerified: true })
       .where(eq(customers.phone, phone))
       .returning();
     if (!customer) {
       const [newCustomer] = await db.insert(customers).values({
         name: "Customer",
         phone,
-        passwordHash: hashPassword(newPassword),
+        passwordHash: await hashPassword(newPassword),
         isVerified: true,
         sessionToken: token,
       }).returning();
