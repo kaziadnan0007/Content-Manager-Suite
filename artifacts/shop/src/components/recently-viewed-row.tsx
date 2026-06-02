@@ -86,9 +86,9 @@ function MiniCard({ product }: { product: any }) {
             <span className="text-[10px] text-muted-foreground">{sold}+</span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-sm font-black text-primary">৳{product.price.toLocaleString()}</span>
+            <span className="text-sm font-black text-primary">BDT {product.price.toLocaleString()}</span>
             {product.comparePrice && product.comparePrice > product.price && (
-              <span className="text-[10px] text-muted-foreground line-through">৳{product.comparePrice.toLocaleString()}</span>
+              <span className="text-[10px] text-muted-foreground line-through">BDT {product.comparePrice.toLocaleString()}</span>
             )}
           </div>
         </div>

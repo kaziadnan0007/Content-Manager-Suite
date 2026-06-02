@@ -82,7 +82,7 @@ export function AdminOrders() {
                   <div className="font-medium">{order.customerName}</div>
                   <div className="text-xs text-muted-foreground">{order.customerPhone}</div>
                 </TableCell>
-                <TableCell className="font-bold text-primary">৳{order.total}</TableCell>
+                <TableCell className="font-bold text-primary">BDT {order.total}</TableCell>
                 <TableCell className="uppercase text-xs font-bold">{order.paymentMethod}</TableCell>
                 <TableCell>
                   <Select 
@@ -141,7 +141,7 @@ export function AdminOrders() {
                                   <p><span className="text-muted-foreground mr-2">TrxID:</span> {order.transactionId}</p>
                                 </>
                               )}
-                              <p><span className="text-muted-foreground mr-2">Total Amount:</span> <span className="font-bold text-primary text-xl">৳{order.total}</span></p>
+                              <p><span className="text-muted-foreground mr-2">Total Amount:</span> <span className="font-bold text-primary text-xl">BDT {order.total}</span></p>
                             </div>
                           </div>
                         </div>
@@ -169,8 +169,8 @@ export function AdminOrders() {
                                     </div>
                                   </TableCell>
                                   <TableCell className="text-center">{item.quantity}</TableCell>
-                                  <TableCell className="text-right">৳{item.price}</TableCell>
-                                  <TableCell className="text-right font-bold">৳{item.price * item.quantity}</TableCell>
+                                  <TableCell className="text-right">BDT {item.price}</TableCell>
+                                  <TableCell className="text-right font-bold">BDT {item.price * item.quantity}</TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>

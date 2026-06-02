@@ -227,7 +227,7 @@ export function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/20">
             {[
-              { icon: Truck, label: "Free Delivery", sub: "On orders ৳500+" },
+              { icon: Truck, label: "Free Delivery", sub: "On orders BDT 500+" },
               { icon: RefreshCw, label: "Easy Returns", sub: "7-day policy" },
               { icon: Shield, label: "100% Genuine", sub: "Verified products" },
               { icon: HeadphonesIcon, label: "24/7 Support", sub: "Always here for you" },
@@ -349,7 +349,7 @@ export function Home() {
           <div className="rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 p-6 text-white relative overflow-hidden shadow-lg">
             <div className="absolute right-0 top-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
             <Gift className="w-10 h-10 mb-3 opacity-90" />
-            <h3 className="text-xl font-black leading-tight mb-1">Free Delivery<br />on Orders ৳500+!</h3>
+            <h3 className="text-xl font-black leading-tight mb-1">Free Delivery<br />on Orders BDT 500+!</h3>
             <p className="text-white/80 text-xs mb-3">Pay via bKash, Rocket or Cash on Delivery</p>
             <Button asChild size="sm" className="bg-white text-orange-600 hover:bg-white/90 font-bold rounded-full">
               <Link href="/products">Shop Now</Link>

@@ -7,6 +7,7 @@ import ordersRouter from "./orders";
 import settingsRouter from "./settings";
 import uploadsRouter from "./uploads";
 import dashboardRouter from "./dashboard";
+import otpRouter from "./otp";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(ordersRouter);
 router.use(settingsRouter);
 router.use(uploadsRouter);
 router.use(dashboardRouter);
+router.use(otpRouter);
 
 export default router;

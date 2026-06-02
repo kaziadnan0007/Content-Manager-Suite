@@ -191,10 +191,10 @@ export function ProductCard({ product }: { product: Product }) {
 
           {/* Price */}
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-base font-black text-primary">৳{product.price.toLocaleString()}</span>
+            <span className="text-base font-black text-primary">BDT {product.price.toLocaleString()}</span>
             {product.comparePrice && product.comparePrice > product.price && (
               <span className="text-xs text-muted-foreground line-through">
-                ৳{product.comparePrice.toLocaleString()}
+                BDT {product.comparePrice.toLocaleString()}
               </span>
             )}
           </div>

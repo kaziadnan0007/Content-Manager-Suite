@@ -243,12 +243,12 @@ export function ProductDetailPage() {
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-4">
               <span className="text-3xl md:text-4xl font-extrabold text-primary">
-                ৳{product.price.toLocaleString()}
+                BDT {product.price.toLocaleString()}
               </span>
               {product.comparePrice && product.comparePrice > product.price && (
                 <>
                   <span className="text-lg text-muted-foreground line-through">
-                    ৳{product.comparePrice.toLocaleString()}
+                    BDT {product.comparePrice.toLocaleString()}
                   </span>
                   <span className="text-sm font-bold text-green-600 bg-green-50 dark:bg-green-950/30 px-2 py-0.5 rounded-lg">
                     Save {discount}%
@@ -334,7 +334,7 @@ export function ProductDetailPage() {
                 <Truck className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <span className="font-semibold">Free Delivery</span>
-                  <span className="text-muted-foreground"> on orders over ৳500. Available across Bangladesh.</span>
+                  <span className="text-muted-foreground"> on orders over BDT 500. Available across Bangladesh.</span>
                 </div>
               </div>
               <div className="flex items-start gap-3 text-sm">

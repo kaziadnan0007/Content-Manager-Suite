@@ -254,7 +254,7 @@ export function StoreLayout({ children }: { children: React.ReactNode }) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold line-clamp-2 leading-snug">{product.name}</p>
-                            <p className="text-sm font-black text-primary mt-1">৳{product.price.toLocaleString()}</p>
+                            <p className="text-sm font-black text-primary mt-1">BDT {product.price.toLocaleString()}</p>
                             <div className="flex items-center gap-2 mt-2">
                               <div className="flex items-center border-2 border-border rounded-lg h-7 overflow-hidden">
                                 <button
@@ -288,7 +288,7 @@ export function StoreLayout({ children }: { children: React.ReactNode }) {
                   <div className="border-t p-4 flex-shrink-0 space-y-3 bg-background">
                     <div className="flex justify-between items-center">
                       <span className="font-bold">Total</span>
-                      <span className="text-xl font-black text-primary">৳{totalPrice.toLocaleString()}</span>
+                      <span className="text-xl font-black text-primary">BDT {totalPrice.toLocaleString()}</span>
                     </div>
                     {totalPrice >= 500 && (
                       <p className="text-xs text-green-600 font-bold text-center bg-green-50 dark:bg-green-950/30 rounded-xl py-2">
@@ -435,7 +435,7 @@ export function StoreLayout({ children }: { children: React.ReactNode }) {
 
           <div className="mt-8 pt-6 border-t grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { icon: "🚚", title: "Free Delivery", desc: "On orders over ৳500" },
+              { icon: "🚚", title: "Free Delivery", desc: "On orders over BDT 500" },
               { icon: "🔄", title: "Easy Returns", desc: "7-day return policy" },
               { icon: "💳", title: "bKash / Rocket", desc: "Secure payments" },
               { icon: "🛡️", title: "100% Genuine", desc: "Quality guaranteed" },

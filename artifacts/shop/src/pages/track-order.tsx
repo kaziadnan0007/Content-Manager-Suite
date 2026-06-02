@@ -296,11 +296,11 @@ export function TrackOrderPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm truncate">{item.productName}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {item.quantity} × ৳{item.price.toLocaleString()}
+                          {item.quantity} × BDT {item.price.toLocaleString()}
                         </p>
                       </div>
                       <p className="font-black text-sm flex-shrink-0 text-primary">
-                        ৳{(item.quantity * item.price).toLocaleString()}
+                        BDT {(item.quantity * item.price).toLocaleString()}
                       </p>
                     </div>
                   ))}
@@ -310,7 +310,7 @@ export function TrackOrderPage() {
 
                 <div className="flex items-center justify-between">
                   <span className="font-black text-base">Total Amount</span>
-                  <span className="text-2xl font-black text-primary">৳{order.total.toLocaleString()}</span>
+                  <span className="text-2xl font-black text-primary">BDT {order.total.toLocaleString()}</span>
                 </div>
               </CardContent>
             </Card>

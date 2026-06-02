@@ -141,11 +141,11 @@ export function AdminProducts() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Price (৳)</Label>
+                  <Label>Price (BDT )</Label>
                   <Input type="number" required value={formData.price || ''} onChange={e => setFormData({...formData, price: Number(e.target.value)})} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Compare Price (৳)</Label>
+                  <Label>Compare Price (BDT )</Label>
                   <Input type="number" value={formData.comparePrice || ''} onChange={e => setFormData({...formData, comparePrice: Number(e.target.value)})} />
                 </div>
               </div>
@@ -228,7 +228,7 @@ export function AdminProducts() {
                 </TableCell>
                 <TableCell className="font-medium">{product.name} {product.featured && <span className="ml-2 text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full uppercase font-bold">Featured</span>}</TableCell>
                 <TableCell>{product.categoryName || '-'}</TableCell>
-                <TableCell>৳{product.price}</TableCell>
+                <TableCell>BDT {product.price}</TableCell>
                 <TableCell>{product.stock}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>

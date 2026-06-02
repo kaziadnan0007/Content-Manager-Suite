@@ -23,7 +23,7 @@ export function AdminDashboard() {
               {statsLoading ? (
                 <Skeleton className="h-8 w-24" />
               ) : (
-                <div className="text-2xl font-bold">৳{stats?.totalRevenue || 0}</div>
+                <div className="text-2xl font-bold">BDT {stats?.totalRevenue || 0}</div>
               )}
             </CardContent>
           </Card>
@@ -87,7 +87,7 @@ export function AdminDashboard() {
                         <div className="text-sm text-muted-foreground">{order.customerName}</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold">৳{order.total}</div>
+                        <div className="font-bold">BDT {order.total}</div>
                         <div className="text-xs px-2 py-1 rounded-full bg-muted mt-1 uppercase">
                           {order.status}
                         </div>
@@ -114,15 +114,15 @@ export function AdminDashboard() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-pink-600 font-bold">bKash</span>
-                    <span className="font-medium">৳{stats?.revenueByPayment?.bkash || 0}</span>
+                    <span className="font-medium">BDT {stats?.revenueByPayment?.bkash || 0}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-purple-700 font-bold">Rocket</span>
-                    <span className="font-medium">৳{stats?.revenueByPayment?.rocket || 0}</span>
+                    <span className="font-medium">BDT {stats?.revenueByPayment?.rocket || 0}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="font-bold">COD</span>
-                    <span className="font-medium">৳{stats?.revenueByPayment?.cod || 0}</span>
+                    <span className="font-medium">BDT {stats?.revenueByPayment?.cod || 0}</span>
                   </div>
                 </div>
               )}

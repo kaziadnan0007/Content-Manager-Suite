@@ -83,7 +83,7 @@ function FilterPanel({
       </div>
 
       <div>
-        <h3 className="font-bold text-sm uppercase tracking-wide mb-3">Price Range (৳)</h3>
+        <h3 className="font-bold text-sm uppercase tracking-wide mb-3">Price Range (BDT )</h3>
         <div className="flex gap-2 items-center">
           <Input type="number" placeholder="Min" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-full" min={0} />
           <span className="text-muted-foreground flex-shrink-0">—</span>
@@ -302,13 +302,13 @@ export function ProductsPage() {
               )}
               {minPrice && (
                 <Badge variant="secondary" className="gap-1 pr-1 text-xs">
-                  Min ৳{minPrice}
+                  Min BDT {minPrice}
                   <button onClick={() => setMinPrice("")} className="ml-0.5 hover:text-destructive"><X className="w-3 h-3" /></button>
                 </Badge>
               )}
               {maxPrice && (
                 <Badge variant="secondary" className="gap-1 pr-1 text-xs">
-                  Max ৳{maxPrice}
+                  Max BDT {maxPrice}
                   <button onClick={() => setMaxPrice("")} className="ml-0.5 hover:text-destructive"><X className="w-3 h-3" /></button>
                 </Badge>
               )}
@@ -355,9 +355,9 @@ export function ProductsPage() {
                           <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{product.description}</p>
                         )}
                         <div className="flex items-center gap-3 mt-2">
-                          <span className="text-lg font-black text-primary">৳{product.price.toLocaleString()}</span>
+                          <span className="text-lg font-black text-primary">BDT {product.price.toLocaleString()}</span>
                           {product.comparePrice && product.comparePrice > product.price && (
-                            <span className="text-sm text-muted-foreground line-through">৳{product.comparePrice.toLocaleString()}</span>
+                            <span className="text-sm text-muted-foreground line-through">BDT {product.comparePrice.toLocaleString()}</span>
                           )}
                           {product.stock <= 0 && <Badge variant="destructive" className="text-xs">Out of Stock</Badge>}
                           {product.badge && product.stock > 0 && <Badge className="text-[10px]">{product.badge}</Badge>}
