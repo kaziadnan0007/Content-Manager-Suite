@@ -9,6 +9,7 @@ import uploadsRouter from "./uploads";
 import dashboardRouter from "./dashboard";
 import otpRouter from "./otp";
 import notificationsRouter from "./notifications";
+import customersRouter from "./customers";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(uploadsRouter);
 router.use(dashboardRouter);
 router.use(otpRouter);
 router.use(notificationsRouter);
+router.use(customersRouter);
 
 export default router;

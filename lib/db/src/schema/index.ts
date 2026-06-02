@@ -6,3 +6,4 @@ export * from "./banners";
 export * from "./admin";
 export * from "./uploads";
 export * from "./otp";
+export * from "./customers";
