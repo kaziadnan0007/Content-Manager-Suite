@@ -197,8 +197,8 @@ export function StoreLayout({ children }: { children: React.ReactNode }) {
               </SheetContent>
             </Sheet>
 
-            {/* Logo + Brand */}
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
+            {/* Logo */}
+            <Link href="/" className="flex items-center flex-shrink-0">
               {settings?.logoUrl ? (
                 <img
                   src={settings.logoUrl}
@@ -206,10 +206,7 @@ export function StoreLayout({ children }: { children: React.ReactNode }) {
                   className="h-12 md:h-14 max-w-[200px] object-contain drop-shadow-md"
                 />
               ) : (
-                <>
-                  <AcholGathaLogo onDark />
-                  <BrandWordmark onDark />
-                </>
+                <AcholGathaLogo onDark />
               )}
             </Link>
 
