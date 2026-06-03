@@ -44,7 +44,7 @@ async function ensureCustomersTable() {
 }
 ensureCustomersTable();
 
-/* ─── Register (step 1) ─────────────────────────────────────────────────── */
+/* ─── Register — auto-activates immediately, no OTP needed ─────────────── */
 router.post("/customers/register", async (req, res) => {
   const { name, phone, email, password } = req.body;
   if (!name || !phone || !password) {
@@ -58,12 +58,24 @@ router.post("/customers/register", async (req, res) => {
     if (existing.length > 0 && existing[0].isVerified) {
       return res.status(409).json({ error: "Phone number already registered. Please sign in." });
     }
+    const token = generateToken();
+    const hash = await hashPassword(password);
+    let customer;
     if (existing.length > 0) {
-      await db.update(customers).set({ name, email: email || null, passwordHash: await hashPassword(password) }).where(eq(customers.phone, phone));
+      [customer] = await db.update(customers)
+        .set({ name, email: email || null, passwordHash: hash, isVerified: true, sessionToken: token })
+        .where(eq(customers.phone, phone))
+        .returning();
     } else {
-      await db.insert(customers).values({ name, phone, email: email || null, passwordHash: await hashPassword(password), isVerified: false });
+      [customer] = await db.insert(customers)
+        .values({ name, phone, email: email || null, passwordHash: hash, isVerified: true, sessionToken: token })
+        .returning();
     }
-    res.json({ success: true, message: "Account created. Please verify your phone with OTP." });
+    res.json({
+      success: true,
+      token,
+      customer: { id: customer!.id, name: customer!.name, phone: customer!.phone, email: customer!.email, address: customer!.address, city: customer!.city }
+    });
   } catch {
     res.status(500).json({ error: "Registration failed. Please try again." });
   }
