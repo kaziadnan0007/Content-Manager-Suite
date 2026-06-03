@@ -189,14 +189,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-slate-900 text-slate-300">
       <div className="p-5 border-b border-slate-800">
-        <div className="flex items-center gap-2.5 mb-1">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md flex-shrink-0">
-            <span className="text-white font-black text-sm">AG</span>
-          </div>
-          <div>
-            <h2 className="text-base font-black text-white tracking-tight leading-tight">AcholGatha</h2>
-            <p className="text-[10px] text-slate-500 leading-tight">Admin Panel</p>
-          </div>
+        <div className="flex flex-col gap-1">
+          <img
+            src="/acholgatha-logo-transparent.png"
+            alt="AcholGatha"
+            className="h-8 w-auto object-contain brightness-0 invert"
+          />
+          <p className="text-[10px] text-slate-500 leading-tight tracking-widest uppercase font-semibold pl-0.5">Admin Panel</p>
         </div>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">

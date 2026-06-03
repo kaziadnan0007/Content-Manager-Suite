@@ -13,14 +13,19 @@ import { useState } from "react";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useAuth } from "@/components/auth-context";
 
-/* ─── Coolors-style AcholGatha Wordmark Logo ────────────────────────────── */
+/* ─── AcholGatha Logo Image ──────────────────────────────────────────────── */
 function AcholGathaLogo({ size = "md", onDark = false }: { size?: "sm" | "md" | "lg"; onDark?: boolean }) {
-  const sz = { sm: "text-lg", md: "text-2xl", lg: "text-3xl" }[size];
+  const h = { sm: "h-7", md: "h-9", lg: "h-11" }[size];
   return (
-    <span className={`logo-wordmark ${sz} select-none`}>
-      <span className={onDark ? "text-white" : "text-foreground"}>achol</span>
-      <span className="text-primary">gatha</span>
-    </span>
+    <img
+      src="/acholgatha-logo-transparent.png"
+      alt="AcholGatha"
+      className={`${h} w-auto object-contain select-none drop-shadow-sm ${
+        onDark
+          ? "brightness-0 invert"
+          : "[filter:brightness(0)_saturate(100%)_invert(62%)_sepia(98%)_saturate(700%)_hue-rotate(158deg)_brightness(105%)_contrast(102%)]"
+      }`}
+    />
   );
 }
 

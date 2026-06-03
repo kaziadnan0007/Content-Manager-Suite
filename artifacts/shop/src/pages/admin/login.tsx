@@ -34,13 +34,12 @@ export function AdminLoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-2">
-            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
-              <span className="text-white font-black text-lg">AG</span>
-            </div>
-          </div>
-          <h1 className="text-2xl font-black text-primary">AcholGatha</h1>
-          <p className="text-muted-foreground text-sm">Admin Control Panel</p>
+          <img
+            src="/acholgatha-logo-transparent.png"
+            alt="AcholGatha"
+            className="h-12 w-auto object-contain mx-auto mb-2 [filter:brightness(0)_saturate(100%)_invert(62%)_sepia(98%)_saturate(700%)_hue-rotate(158deg)_brightness(105%)_contrast(102%)]"
+          />
+          <p className="text-muted-foreground text-sm font-medium">Admin Control Panel</p>
         </div>
 
         <Card className="shadow-xl border-2 border-border">
