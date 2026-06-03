@@ -178,22 +178,35 @@ export function ProductDetailPage() {
               )}
             </div>
 
-            {/* Thumbnails */}
+            {/* Angle thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1">
-                {images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setActiveImage(idx)}
-                    className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all ${
-                      activeImage === idx
-                        ? "border-primary shadow-md"
-                        : "border-transparent hover:border-muted-foreground/30"
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
+                {images.map((img, idx) => {
+                  const ANGLE_LABELS = ["Front View", "Side Angle", "Detail Close-up"];
+                  const label = ANGLE_LABELS[idx] ?? `View ${idx + 1}`;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImage(idx)}
+                      className={`flex-shrink-0 w-20 md:w-24 rounded-xl overflow-hidden border-2 transition-all ${
+                        activeImage === idx
+                          ? "border-primary shadow-md"
+                          : "border-transparent hover:border-muted-foreground/30"
+                      }`}
+                    >
+                      <div className="w-full h-16 md:h-20 overflow-hidden">
+                        <img src={img} alt={label} className="w-full h-full object-cover" />
+                      </div>
+                      <div className={`text-[9px] font-semibold text-center py-1 px-1 leading-tight transition-colors ${
+                        activeImage === idx
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground"
+                      }`}>
+                        {label}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
