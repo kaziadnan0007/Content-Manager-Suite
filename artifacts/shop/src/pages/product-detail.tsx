@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProductCard } from "@/components/product-card";
 import { RecentlyViewedRow } from "@/components/recently-viewed-row";
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
+import { useAuthGate } from "@/components/auth-gate";
 import { useState } from "react";
 import {
   Minus,
@@ -43,6 +44,7 @@ export function ProductDetailPage() {
   const { addItem } = useCart();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { requireAuth } = useAuthGate();
 
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
@@ -50,19 +52,23 @@ export function ProductDetailPage() {
   const { recentIds } = useRecentlyViewed(id);
 
   const handleAddToCart = () => {
-    if (product) {
-      addItem(product, quantity);
-      setAddedToCart(true);
-      setTimeout(() => setAddedToCart(false), 2000);
-      toast({ title: "Added to cart!", description: `${quantity}x ${product.name}` });
-    }
+    requireAuth(() => {
+      if (product) {
+        addItem(product, quantity);
+        setAddedToCart(true);
+        setTimeout(() => setAddedToCart(false), 2000);
+        toast({ title: "Added to cart! 🛒", description: `${quantity}x ${product.name}` });
+      }
+    });
   };
 
   const handleBuyNow = () => {
-    if (product) {
-      addItem(product, quantity);
-      setLocation("/checkout");
-    }
+    requireAuth(() => {
+      if (product) {
+        addItem(product, quantity);
+        setLocation("/checkout");
+      }
+    });
   };
 
   const handleShare = () => {
@@ -151,7 +157,6 @@ export function ProductDetailPage() {
         <div className="grid md:grid-cols-2 gap-8 lg:gap-16">
           {/* ── Images ─────────────────────────── */}
           <div className="space-y-3">
-            {/* Main image */}
             <div className="aspect-square bg-muted rounded-2xl overflow-hidden border relative group">
               {images[activeImage] ? (
                 <img
@@ -178,7 +183,6 @@ export function ProductDetailPage() {
               )}
             </div>
 
-            {/* Angle thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {images.map((img, idx) => {
@@ -198,9 +202,7 @@ export function ProductDetailPage() {
                         <img src={img} alt={label} className="w-full h-full object-cover" />
                       </div>
                       <div className={`text-[9px] font-semibold text-center py-1 px-1 leading-tight transition-colors ${
-                        activeImage === idx
-                          ? "text-primary bg-primary/10"
-                          : "text-muted-foreground"
+                        activeImage === idx ? "text-primary bg-primary/10" : "text-muted-foreground"
                       }`}>
                         {label}
                       </div>
@@ -213,7 +215,6 @@ export function ProductDetailPage() {
 
           {/* ── Details ────────────────────────── */}
           <div className="flex flex-col">
-            {/* Category + badges */}
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               {product.categoryName && (
                 <Link href={`/products?category=${product.categoryId}`}>
@@ -230,12 +231,10 @@ export function ProductDetailPage() {
               )}
             </div>
 
-            {/* Title */}
             <h1 className="text-2xl md:text-3xl font-extrabold leading-tight mb-3">
               {product.name}
             </h1>
 
-            {/* Rating */}
             <div className="flex items-center gap-2 mb-4">
               <div className="flex items-center gap-0.5">
                 {[1, 2, 3, 4, 5].map((s) => (
@@ -253,7 +252,6 @@ export function ProductDetailPage() {
               <span className="text-sm text-muted-foreground">({reviewCount} reviews)</span>
             </div>
 
-            {/* Price */}
             <div className="flex items-baseline gap-3 mb-4">
               <span className="text-3xl md:text-4xl font-extrabold text-primary">
                 BDT {product.price.toLocaleString()}
@@ -270,7 +268,6 @@ export function ProductDetailPage() {
               )}
             </div>
 
-            {/* Stock badge */}
             <div className="mb-5">
               {product.stock > 10 ? (
                 <span className="text-sm text-green-600 font-medium flex items-center gap-1.5">
@@ -285,14 +282,12 @@ export function ProductDetailPage() {
               )}
             </div>
 
-            {/* Description */}
             {product.description && (
               <div className="text-sm text-muted-foreground leading-relaxed mb-6 pb-6 border-b">
                 {product.description}
               </div>
             )}
 
-            {/* Quantity + Actions */}
             {product.stock > 0 && (
               <div className="space-y-4 mt-auto">
                 <div className="flex items-center gap-3">
@@ -332,7 +327,7 @@ export function ProductDetailPage() {
                   </Button>
                   <Button
                     size="lg"
-                    className="h-12 gap-2 font-bold"
+                    className="h-12 gap-2 font-bold neon-glow"
                     onClick={handleBuyNow}
                   >
                     <Zap className="w-5 h-5" /> Buy Now
@@ -341,7 +336,6 @@ export function ProductDetailPage() {
               </div>
             )}
 
-            {/* Delivery + policies */}
             <div className="mt-6 rounded-xl border bg-muted/30 p-4 space-y-3">
               <div className="flex items-start gap-3 text-sm">
                 <Truck className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
@@ -366,7 +360,6 @@ export function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Share */}
             <button
               onClick={handleShare}
               className="mt-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
@@ -377,7 +370,6 @@ export function ProductDetailPage() {
           </div>
         </div>
 
-        {/* ── Related Products ───────────────── */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <div className="flex items-center justify-between mb-6">
@@ -397,7 +389,6 @@ export function ProductDetailPage() {
           </div>
         )}
 
-        {/* ── Recently Viewed ────────────────── */}
         <RecentlyViewedRow recentIds={recentIds} />
       </div>
     </StoreLayout>

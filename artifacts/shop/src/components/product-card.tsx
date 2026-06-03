@@ -3,6 +3,7 @@ import { ShoppingCart, Star, Zap, Heart } from "lucide-react";
 import { useCart } from "@/components/cart-context";
 import { useToast } from "@/hooks/use-toast";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { useAuthGate } from "@/components/auth-gate";
 
 interface Product {
   id: number;
@@ -30,6 +31,7 @@ export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const { toast } = useToast();
   const { toggle, isWishlisted } = useWishlist();
+  const { requireAuth } = useAuthGate();
 
   const wishlisted = isWishlisted(product.id);
 
@@ -46,15 +48,19 @@ export function ProductCard({ product }: { product: Product }) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product as any, 1);
-    toast({ title: "Added to cart!", description: product.name });
+    requireAuth(() => {
+      addItem(product as any, 1);
+      toast({ title: "Added to cart! 🛒", description: product.name });
+    });
   };
 
   const handleBuyNow = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product as any, 1);
-    window.location.href = "/checkout";
+    requireAuth(() => {
+      addItem(product as any, 1);
+      window.location.href = "/checkout";
+    });
   };
 
   const handleWishlist = (e: React.MouseEvent) => {

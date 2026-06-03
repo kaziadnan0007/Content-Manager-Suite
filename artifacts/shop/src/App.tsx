@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CartProvider } from "@/components/cart-context";
 import { AuthProvider } from "@/components/auth-context";
+import { AuthGateProvider } from "@/components/auth-gate";
 import NotFound from "@/pages/not-found";
 import { Home } from "@/pages/home";
 import { ProductsPage } from "@/pages/products";
@@ -40,7 +41,6 @@ const queryClient = new QueryClient({
 function Router() {
   return (
     <Switch>
-      {/* Public store routes */}
       <Route path="/" component={Home} />
       <Route path="/products" component={ProductsPage} />
       <Route path="/products/:id" component={ProductDetailPage} />
@@ -48,16 +48,12 @@ function Router() {
       <Route path="/order-success" component={OrderSuccessPage} />
       <Route path="/track-order" component={TrackOrderPage} />
       <Route path="/wishlist" component={WishlistPage} />
-
-      {/* Customer auth routes */}
       <Route path="/auth/signin" component={SignInPage} />
       <Route path="/auth/signup" component={SignUpPage} />
       <Route path="/auth/verify" component={VerifyCodePage} />
       <Route path="/auth/new-password" component={NewPasswordPage} />
       <Route path="/auth/reset-password" component={ResetPasswordPage} />
       <Route path="/profile" component={ProfilePage} />
-
-      {/* Admin routes (no links in public UI) */}
       <Route path="/admin/login" component={AdminLoginPage} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/products" component={AdminProducts} />
@@ -65,7 +61,6 @@ function Router() {
       <Route path="/admin/orders" component={AdminOrders} />
       <Route path="/admin/banners" component={AdminBanners} />
       <Route path="/admin/settings" component={AdminSettings} />
-
       <Route component={NotFound} />
     </Switch>
   );
@@ -77,12 +72,14 @@ function App() {
       <ThemeProvider defaultTheme="light" storageKey="shopbd-theme">
         <AuthProvider>
           <CartProvider>
-            <TooltipProvider>
-              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-                <Router />
-              </WouterRouter>
-              <Toaster />
-            </TooltipProvider>
+            <AuthGateProvider>
+              <TooltipProvider>
+                <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                  <Router />
+                </WouterRouter>
+                <Toaster />
+              </TooltipProvider>
+            </AuthGateProvider>
           </CartProvider>
         </AuthProvider>
       </ThemeProvider>

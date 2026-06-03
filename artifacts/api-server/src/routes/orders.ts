@@ -2,8 +2,9 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { ordersTable, productsTable } from "@workspace/db";
 import { eq, desc, count, and } from "drizzle-orm";
-import { notifier, sendTelegramNotification, sendOrderConfirmationEmail } from "../lib/notifier";
-import { sendSMS } from "../lib/sms";
+import { notifier } from "../lib/notifier";
+import { sendSMS, sendOtpEmail } from "../lib/sms";
+import { sendOrderConfirmationEmail } from "../lib/notifier";
 
 const router = Router();
 
@@ -66,9 +67,7 @@ router.get("/orders/track", async (req, res) => {
       .where(and(eq(ordersTable.id, id), eq(ordersTable.customerPhone, phone.trim())));
 
     if (!order) {
-      res
-        .status(404)
-        .json({ error: "Order not found. Please check your order ID and phone number." });
+      res.status(404).json({ error: "Order not found. Please check your order ID and phone number." });
       return;
     }
     res.json(mapOrder(order));
@@ -90,13 +89,7 @@ router.get("/orders", async (req, res) => {
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [orders, totalResult] = await Promise.all([
-      db
-        .select()
-        .from(ordersTable)
-        .where(where)
-        .orderBy(desc(ordersTable.createdAt))
-        .limit(limitNum)
-        .offset(offset),
+      db.select().from(ordersTable).where(where).orderBy(desc(ordersTable.createdAt)).limit(limitNum).offset(offset),
       db.select({ total: count() }).from(ordersTable).where(where),
     ]);
 
@@ -118,6 +111,8 @@ router.post("/orders", async (req, res) => {
       customerName: string;
       customerPhone: string;
       customerAddress?: string;
+      customerCity?: string;
+      customerEmail?: string;
       items: Array<{ productId: number; quantity: number }>;
       paymentMethod: string;
       paymentNumber?: string;
@@ -147,12 +142,16 @@ router.post("/orders", async (req, res) => {
       };
     });
 
+    const fullAddress = body.customerCity
+      ? `${body.customerAddress ?? ""}, ${body.customerCity}`.trim().replace(/^,\s*/, "")
+      : (body.customerAddress ?? null);
+
     const [order] = await db
       .insert(ordersTable)
       .values({
         customerName: body.customerName,
         customerPhone: body.customerPhone,
-        customerAddress: body.customerAddress ?? null,
+        customerAddress: fullAddress,
         items: orderItems,
         total: String(total),
         status: "pending",
@@ -163,6 +162,7 @@ router.post("/orders", async (req, res) => {
       })
       .returning();
 
+    // ── Broadcast websocket event for admin dashboard ──
     notifier.broadcast({
       type: "new_order",
       orderId: order!.id,
@@ -174,34 +174,53 @@ router.post("/orders", async (req, res) => {
       timestamp: new Date().toISOString(),
     });
 
-    // Send order confirmation SMS to customer
+    const orderTimestamp = new Date().toLocaleString("en-GB", { timeZone: "Asia/Dhaka" });
+    const firstProductName = orderItems[0]?.productName ?? "N/A";
+    const totalQuantity = orderItems.reduce((s, i) => s + i.quantity, 0);
+    const customerEmail = body.customerEmail?.trim() || null;
+    const displayAddress = fullAddress || "N/A";
+
+    // ── Telegram notification ──────────────────────────────────────────────
+    const botToken = process.env["TELEGRAM_BOT_TOKEN"];
+    const groupId = process.env["TELEGRAM_GROUP_ID"];
+    if (botToken && groupId) {
+      const telegramMsg = [
+        "🛒 NEW ORDER CONFIRMED",
+        "━━━━━━━━━━━━━━━",
+        `👤 Name: ${order!.customerName}`,
+        `📞 Phone: ${order!.customerPhone}`,
+        `📧 Email: ${customerEmail ?? "Not provided"}`,
+        `📍 Address: ${displayAddress}`,
+        `📦 Product: ${firstProductName}`,
+        `🔢 Quantity: ${totalQuantity}`,
+        `💰 Total: BDT ${total.toLocaleString()}`,
+        `🕐 Time: ${orderTimestamp}`,
+        "✅ Status: CONFIRMED",
+        "━━━━━━━━━━━━━━━",
+      ].join("\n");
+
+      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: groupId, text: telegramMsg }),
+      }).catch((err) => req.log.warn({ err }, "Telegram order notification failed"));
+    }
+
+    // ── Order confirmation email (only if email provided) ─────────────────
+    if (customerEmail) {
+      sendOrderConfirmationEmail(customerEmail, order!.customerName, {
+        productName: firstProductName,
+        address: displayAddress,
+        timestamp: orderTimestamp,
+      }).catch((err) => req.log.warn({ err }, "Order confirmation email failed"));
+    }
+
+    // ── SMS confirmation to customer ──────────────────────────────────────
     try {
       const confirmMsg = `🛒 AcholGatha: Hi ${order!.customerName}, your Order #${order!.id} has been received! Total: BDT ${total.toLocaleString()}. We'll confirm soon. Thank you!`;
       await sendSMS(order!.customerPhone, confirmMsg);
     } catch (smsErr) {
-      req.log.warn({ smsErr }, "Order confirmation SMS failed");
-    }
-
-    const orderTimestamp = new Date().toLocaleString("en-GB", { timeZone: "Asia/Dhaka" });
-    const firstProductName = orderItems[0]?.productName ?? "N/A";
-
-    sendTelegramNotification({
-      customerName: order!.customerName,
-      phone: order!.customerPhone,
-      email: null,
-      productName: firstProductName,
-      address: order!.customerAddress,
-      timestamp: orderTimestamp,
-    }).catch((err) => req.log.warn({ err }, "Telegram order notification failed"));
-
-    // Send email confirmation if customer email is available
-    const customerEmail = (req.body as { customerEmail?: string }).customerEmail;
-    if (customerEmail) {
-      sendOrderConfirmationEmail(customerEmail, order!.customerName, {
-        productName: firstProductName,
-        address: order!.customerAddress,
-        timestamp: orderTimestamp,
-      }).catch((err) => req.log.warn({ err }, "Order confirmation email failed"));
+      req.log.warn({ smsErr }, "Order confirmation SMS failed (non-fatal)");
     }
 
     res.status(201).json(mapOrder(order!));
@@ -246,7 +265,6 @@ router.patch("/orders/:id", async (req, res) => {
       return;
     }
 
-    // Send SMS notification to customer when admin updates status
     const smsFn = STATUS_SMS[status];
     if (smsFn && order.customerPhone) {
       try {

@@ -1,0 +1,109 @@
+I have an existing TypeScript Express e-commerce project.
+DO NOT change any existing functionality.
+DO NOT modify database schema.
+ONLY add these specific features:
+
+=== TASK 1: FORCE LOGIN BEFORE ORDER ===
+In shop frontend (shop/src):
+When customer clicks "Order Now" or "Add to Cart" or 
+"Checkout" button:
+- If NOT logged in → show popup/modal:
+  
+  "Please sign in to continue your order"
+  [Sign In] [Create Account]
+  
+- After login/signup → automatically continue to order
+- DO NOT redirect away from product page
+
+=== TASK 2: DELIVERY INFO WITH OPTIONAL EMAIL ===
+In order/checkout form:
+Collect these fields:
+- Full Name (required)
+- Phone Number (required)
+- Delivery Address (required)
+- City (required)
+- Email (optional - show as "Email (optional)")
+
+Validation rules:
+- Name, Phone, Address, City = required
+- Email = completely optional
+- If email given → send order confirmation email
+- If no email → skip email, still process order normally
+
+=== TASK 3: OTP VIA EMAIL ONLY IF EMAIL PROVIDED ===
+During checkout:
+- If customer provided email → send OTP to email for verification
+- If no email provided → skip OTP, confirm order directly
+- OTP email subject: "Your Order Verification Code"
+- OTP body: 
+  "Your verification code is: {OTP}
+   Valid for 10 minutes."
+
+=== TASK 4: ORDER CONFIRMATION FLOW ===
+After order confirmed (with or without OTP):
+
+1. Show success message on screen:
+"✅ Your order has been approved! 
+You will receive delivery within 
+3-5 working days. Thank you!"
+
+2. Send Telegram message to admin group:
+🛒 NEW ORDER CONFIRMED
+━━━━━━━━━━━━━━━
+👤 Name: {name}
+📞 Phone: {phone}
+📧 Email: {email or "Not provided"}
+📍 Address: {address}, {city}
+📦 Product: {productName}
+🔢 Quantity: {quantity}
+💰 Total: {totalPrice}
+🕐 Time: {timestamp}
+✅ Status: CONFIRMED
+━━━━━━━━━━━━━━━
+
+3. If email provided → send confirmation email:
+Subject: "✅ Order Confirmed - AcholGatha"
+Body:
+"Dear {name},
+
+Your order has been approved!
+You will receive your delivery within 
+3-5 working days.
+
+Order Details:
+- Product: {productName}
+- Quantity: {quantity}
+- Delivery Address: {address}, {city}
+- Order Time: {timestamp}
+
+Thank you for shopping with us!
+AcholGatha Team"
+
+=== TASK 5: NEW CUSTOMER AUTO PROFILE ===
+When customer creates account:
+- Automatically save: name, phone, email, address
+- Send Telegram notification to admin:
+
+🆕 NEW CUSTOMER REGISTERED
+━━━━━━━━━━━━━━━
+👤 Name: {name}
+📞 Phone: {phone}
+📧 Email: {email or "Not provided"}
+🕐 Time: {timestamp}
+━━━━━━━━━━━━━━━
+
+=== IMPORTANT RULES ===
+1. DO NOT break existing code
+2. DO NOT change database schema
+3. DO NOT remove existing features
+4. Email is always optional
+5. Phone is always required
+6. Telegram notification always works 
+   regardless of email
+7. All env variables already in Replit Secrets:
+   - TELEGRAM_BOT_TOKEN
+   - TELEGRAM_GROUP_ID
+   - GMAIL_USER
+   - GMAIL_APP_PASSWORD
+8. TypeScript only
+9. Show only new/modified code parts
