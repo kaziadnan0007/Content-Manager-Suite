@@ -4,6 +4,7 @@ import { customers } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
+import { sendWelcomeEmail, sendTelegramNewCustomer } from "../lib/notifier";
 
 const router = Router();
 
@@ -71,6 +72,18 @@ router.post("/customers/register", async (req, res) => {
         .values({ name, phone, email: email || null, passwordHash: hash, isVerified: true, sessionToken: token })
         .returning();
     }
+    const timestamp = new Date().toLocaleString("en-GB", { timeZone: "Asia/Dhaka" });
+
+    if (customer!.email) {
+      sendWelcomeEmail(customer!.email, customer!.name).catch(() => {});
+    }
+    sendTelegramNewCustomer({
+      customerName: customer!.name,
+      email: customer!.email,
+      phone: customer!.phone,
+      timestamp,
+    }).catch(() => {});
+
     res.json({
       success: true,
       token,

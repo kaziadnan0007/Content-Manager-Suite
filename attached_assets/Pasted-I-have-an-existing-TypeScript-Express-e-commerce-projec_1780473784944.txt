@@ -1,0 +1,116 @@
+I have an existing TypeScript Express e-commerce project. 
+DO NOT recreate existing files. Only ADD or MODIFY specific parts.
+
+Project structure:
+- api-server/src/routes/orders.ts
+- api-server/src/routes/otp.ts
+- api-server/src/routes/auth.ts
+- api-server/src/routes/customers.ts
+- api-server/src/lib/notifier.ts
+- api-server/src/lib/sms.ts
+- Uses Drizzle ORM
+
+=== TASK 1: TELEGRAM NOTIFICATION ===
+In api-server/src/lib/notifier.ts, ADD this function:
+
+When order is placed and OTP verified, automatically send 
+this message to Telegram group using TELEGRAM_BOT_TOKEN 
+and TELEGRAM_GROUP_ID from environment variables:
+
+🛒 NEW ORDER RECEIVED
+━━━━━━━━━━━━━━━
+👤 Name: {customerName}
+📞 Phone: {phone}
+📧 Email: {email}
+📦 Product: {productName}
+📍 Address: {address}
+🕐 Time: {timestamp}
+✅ Status: CONFIRMED
+━━━━━━━━━━━━━━━
+
+=== TASK 2: CUSTOMER EMAIL CONFIRMATION ===
+In api-server/src/lib/notifier.ts, ADD nodemailer function:
+Use GMAIL_USER and GMAIL_APP_PASSWORD from environment variables.
+
+After OTP verified, send this email to customer automatically:
+
+Subject: "✅ Your Order is Confirmed!"
+Body:
+"Dear {customerName},
+
+Your order has been approved! 
+You will receive your delivery within 3-5 working days.
+
+Order Details:
+- Product: {productName}
+- Address: {address}
+- Order Time: {timestamp}
+
+Thank you for shopping with us!
+Best regards,
+AcholGatha"
+
+=== TASK 3: CUSTOMER PROFILE ON SIGNUP ===
+In api-server/src/routes/auth.ts, MODIFY registration:
+
+When a new customer signs up with email, automatically:
+1. Create customer profile in database with:
+   - name
+   - email
+   - phone
+   - address
+   - created_at
+   - profile_status: "active"
+
+2. Send welcome email via Gmail (GMAIL_USER, GMAIL_APP_PASSWORD):
+Subject: "🎉 Welcome to AcholGatha!"
+Body:
+"Dear {customerName},
+
+Welcome to AcholGatha! Your account has been 
+successfully created.
+
+You can now:
+- Track your orders
+- Save your delivery address
+- Get order updates directly to your email
+
+Thank you for joining us!
+Best regards,
+AcholGatha Team"
+
+3. Send Telegram notification to admin group:
+🆕 NEW CUSTOMER REGISTERED
+━━━━━━━━━━━━━━━
+👤 Name: {customerName}
+📧 Email: {email}
+📞 Phone: {phone}
+🕐 Time: {timestamp}
+━━━━━━━━━━━━━━━
+
+=== TASK 4: ORDER ROUTES INTEGRATION ===
+In api-server/src/routes/orders.ts:
+After order confirmed and OTP verified, CALL:
+- sendTelegramNotification(orderDetails)
+- sendOrderConfirmationEmail(customerEmail, customerName, orderDetails)
+
+=== TASK 5: PACKAGES TO INSTALL ===
+Install only if not already installed:
+- node-telegram-bot-api
+- @types/node-telegram-bot-api
+- nodemailer
+- @types/nodemailer
+
+=== IMPORTANT RULES ===
+1. DO NOT touch database schema
+2. DO NOT recreate existing files
+3. DO NOT change existing routes logic
+4. Only ADD new functions to existing files
+5. All environment variables already exist in Replit Secrets:
+   - TELEGRAM_BOT_TOKEN
+   - TELEGRAM_GROUP_ID
+   - GMAIL_USER
+   - GMAIL_APP_PASSWORD
+6. Show only modified/added parts of each file
+7. Use existing Drizzle ORM schema
+8. TypeScript only, no JavaScript files

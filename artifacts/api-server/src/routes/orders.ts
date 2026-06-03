@@ -2,7 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { ordersTable, productsTable } from "@workspace/db";
 import { eq, desc, count, and } from "drizzle-orm";
-import { notifier } from "../lib/notifier";
+import { notifier, sendTelegramNotification, sendOrderConfirmationEmail } from "../lib/notifier";
 import { sendSMS } from "../lib/sms";
 
 const router = Router();
@@ -180,6 +180,28 @@ router.post("/orders", async (req, res) => {
       await sendSMS(order!.customerPhone, confirmMsg);
     } catch (smsErr) {
       req.log.warn({ smsErr }, "Order confirmation SMS failed");
+    }
+
+    const orderTimestamp = new Date().toLocaleString("en-GB", { timeZone: "Asia/Dhaka" });
+    const firstProductName = orderItems[0]?.productName ?? "N/A";
+
+    sendTelegramNotification({
+      customerName: order!.customerName,
+      phone: order!.customerPhone,
+      email: null,
+      productName: firstProductName,
+      address: order!.customerAddress,
+      timestamp: orderTimestamp,
+    }).catch((err) => req.log.warn({ err }, "Telegram order notification failed"));
+
+    // Send email confirmation if customer email is available
+    const customerEmail = (req.body as { customerEmail?: string }).customerEmail;
+    if (customerEmail) {
+      sendOrderConfirmationEmail(customerEmail, order!.customerName, {
+        productName: firstProductName,
+        address: order!.customerAddress,
+        timestamp: orderTimestamp,
+      }).catch((err) => req.log.warn({ err }, "Order confirmation email failed"));
     }
 
     res.status(201).json(mapOrder(order!));
