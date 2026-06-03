@@ -294,22 +294,38 @@ export function CheckoutPage() {
                   <span className="w-7 h-7 rounded-full bg-primary text-white text-sm flex items-center justify-center font-bold">2</span>
                   Payment Method
                 </h2>
-                <RadioGroup value={formData.paymentMethod}
-                  onValueChange={(val: any) => setFormData({ ...formData, paymentMethod: val })}
-                  className="grid sm:grid-cols-3 gap-4">
+                <div className="grid sm:grid-cols-3 gap-3">
                   {[
-                    { value: "cod", label: "Cash on Delivery", color: "" },
-                    { value: "bkash", label: "bKash", color: "text-pink-600" },
-                    { value: "rocket", label: "Rocket", color: "text-purple-700" },
-                  ].map(opt => (
-                    <div key={opt.value}
-                      className={`border-2 rounded-lg p-4 cursor-pointer flex flex-col items-center justify-center gap-2 transition-all ${formData.paymentMethod === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/50 hover:bg-muted"}`}
-                      onClick={() => setFormData({ ...formData, paymentMethod: opt.value as OrderInputPaymentMethod })}>
-                      <RadioGroupItem value={opt.value} id={opt.value} className="sr-only" />
-                      <Label htmlFor={opt.value} className={`cursor-pointer font-bold ${opt.color}`}>{opt.label}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
+                    { value: "cod",    label: "Cash on Delivery", icon: "💵", badge: "" },
+                    { value: "bkash",  label: "bKash",            icon: "📱", badge: "bKash" },
+                    { value: "rocket", label: "Rocket",           icon: "🚀", badge: "Rocket" },
+                  ].map(opt => {
+                    const selected = formData.paymentMethod === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, paymentMethod: opt.value as OrderInputPaymentMethod })}
+                        className={`relative border-2 rounded-xl p-4 cursor-pointer flex flex-col items-center justify-center gap-1.5 transition-all text-left w-full ${
+                          selected
+                            ? "border-primary bg-primary/8 shadow-md ring-2 ring-primary/20"
+                            : "border-border hover:border-primary/40 hover:bg-muted/60 bg-card"
+                        }`}>
+                        {selected && (
+                          <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                            <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 10">
+                              <path d="M1.5 5l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </span>
+                        )}
+                        <span className="text-xl">{opt.icon}</span>
+                        <span className={`font-bold text-sm text-center leading-tight ${selected ? "text-primary" : "text-foreground"}`}>
+                          {opt.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
 
                 {formData.paymentMethod !== "cod" && (
                   <div className="mt-6 p-4 bg-muted/50 rounded-lg space-y-4 border">
