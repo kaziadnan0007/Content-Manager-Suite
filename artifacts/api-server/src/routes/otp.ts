@@ -1,18 +1,28 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { otpTable } from "@workspace/db";
+import { otpTable, customers } from "@workspace/db";
 import { eq, and, gt } from "drizzle-orm";
-import { sendSMS } from "../lib/sms";
+import { sendSMS, sendOtpEmail } from "../lib/sms";
 
 const router = Router();
+
+// ── In-memory attempt tracker (resets when new OTP is issued) ─────────────
+const attemptMap = new Map<string, { otpId: number; attempts: number }>();
+const MAX_ATTEMPTS = 3;
 
 function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+// ── POST /otp/send ─────────────────────────────────────────────────────────
+// Body: { phone: string, email?: string }
+// If email not provided, we look it up from the customers table by phone.
+// Delivery priority: Gmail email → Twilio SMS → demo console log.
+
 router.post("/otp/send", async (req, res) => {
   try {
-    const { phone } = req.body as { phone: string };
+    const { phone, email: bodyEmail } = req.body as { phone: string; email?: string };
+
     if (!phone || !/^(?:\+?88)?01[3-9]\d{8}$/.test(phone.replace(/\s/g, ""))) {
       res.status(400).json({ error: "Invalid Bangladesh phone number" });
       return;
@@ -20,27 +30,70 @@ router.post("/otp/send", async (req, res) => {
 
     const normalizedPhone = phone.replace(/\s/g, "");
     const code = generateOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+    // Delete any existing unused OTP for this phone
     await db.delete(otpTable).where(eq(otpTable.phone, normalizedPhone));
-    await db.insert(otpTable).values({ phone: normalizedPhone, code, expiresAt, used: false });
 
-    const message = `Your AcholGatha OTP is: ${code}. Valid for 10 minutes. Do not share with anyone.`;
-    const { sent, demoCode } = await sendSMS(normalizedPhone, message);
+    const [inserted] = await db
+      .insert(otpTable)
+      .values({ phone: normalizedPhone, code, expiresAt, used: false })
+      .returning();
 
-    const response: Record<string, unknown> = { success: true, smsSent: sent };
-    if (!sent) {
-      response["demoMode"] = true;
-      response["demoCode"] = demoCode;
-      response["message"] = "Demo mode: SMS not configured. Use the code shown below.";
+    // Reset attempt counter for this phone whenever a new OTP is issued
+    attemptMap.set(normalizedPhone, { otpId: inserted!.id, attempts: 0 });
+
+    // Resolve delivery email: use provided email, or look up from customers table
+    let deliveryEmail = bodyEmail?.trim() || null;
+    if (!deliveryEmail) {
+      const [customer] = await db
+        .select({ email: customers.email })
+        .from(customers)
+        .where(eq(customers.phone, normalizedPhone))
+        .limit(1);
+      deliveryEmail = customer?.email ?? null;
     }
 
-    res.json(response);
+    // Try Gmail first
+    if (deliveryEmail) {
+      const { sent } = await sendOtpEmail(deliveryEmail, code);
+      if (sent) {
+        res.json({
+          success: true,
+          emailSent: true,
+          message: `OTP sent to your email address.`,
+        });
+        return;
+      }
+    }
+
+    // Fallback: Twilio SMS
+    const smsMessage = `Your AcholGatha OTP is: ${code}. Valid for 10 minutes. Do not share with anyone.`;
+    const { sent: smsSent, demoCode } = await sendSMS(normalizedPhone, smsMessage);
+
+    if (smsSent) {
+      res.json({ success: true, smsSent: true });
+      return;
+    }
+
+    // Final fallback: demo mode (returns code in response for testing)
+    res.json({
+      success: true,
+      emailSent: false,
+      smsSent: false,
+      demoMode: true,
+      demoCode,
+      message: "Demo mode: no delivery configured. Use the code shown below.",
+    });
   } catch (err) {
     req.log.error({ err }, "OTP send error");
     res.status(500).json({ error: "Failed to send OTP" });
   }
 });
+
+// ── POST /otp/verify ───────────────────────────────────────────────────────
+// Body: { phone: string, code: string }
+// Returns 429 after MAX_ATTEMPTS failed tries on the same OTP.
 
 router.post("/otp/verify", async (req, res) => {
   try {
@@ -51,15 +104,23 @@ router.post("/otp/verify", async (req, res) => {
     }
 
     const normalizedPhone = phone.replace(/\s/g, "");
-    const now = new Date();
 
+    // Attempt-limit check
+    const tracker = attemptMap.get(normalizedPhone);
+    if (tracker && tracker.attempts >= MAX_ATTEMPTS) {
+      res.status(429).json({
+        error: `Too many incorrect attempts. Please request a new OTP.`,
+      });
+      return;
+    }
+
+    const now = new Date();
     const [otp] = await db
       .select()
       .from(otpTable)
       .where(
         and(
           eq(otpTable.phone, normalizedPhone),
-          eq(otpTable.code, code),
           eq(otpTable.used, false),
           gt(otpTable.expiresAt, now)
         )
@@ -67,11 +128,27 @@ router.post("/otp/verify", async (req, res) => {
       .limit(1);
 
     if (!otp) {
-      res.status(400).json({ error: "Invalid or expired OTP. Please request a new one." });
+      res.status(400).json({ error: "OTP expired. Please request a new one." });
       return;
     }
 
+    // Wrong code — increment attempt counter
+    if (otp.code !== code.trim()) {
+      const current = attemptMap.get(normalizedPhone) ?? { otpId: otp.id, attempts: 0 };
+      const newAttempts = current.attempts + 1;
+      attemptMap.set(normalizedPhone, { otpId: otp.id, attempts: newAttempts });
+      const remaining = MAX_ATTEMPTS - newAttempts;
+      res.status(400).json({
+        error: remaining > 0
+          ? `Incorrect OTP. ${remaining} attempt${remaining === 1 ? "" : "s"} remaining.`
+          : "Too many incorrect attempts. Please request a new OTP.",
+      });
+      return;
+    }
+
+    // Correct code — mark used and clear tracker
     await db.update(otpTable).set({ used: true }).where(eq(otpTable.id, otp.id));
+    attemptMap.delete(normalizedPhone);
 
     res.json({ success: true, message: "Phone verified successfully" });
   } catch (err) {
