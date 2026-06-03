@@ -6,8 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Eye, ExternalLink } from "lucide-react";
+import { Eye, Printer } from "lucide-react";
 import { format } from "date-fns";
+import { printReceipt } from "@/lib/receipt";
 
 export function AdminOrders() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -177,7 +178,15 @@ export function AdminOrders() {
                           </Table>
                         </div>
                         
-                        <div className="flex justify-end mt-4">
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t gap-3 flex-wrap">
+                          <Button
+                            variant="outline"
+                            className="gap-2 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+                            onClick={() => printReceipt(order)}
+                          >
+                            <Printer className="w-4 h-4" />
+                            Print E-Receipt
+                          </Button>
                           <Select 
                             value={order.status} 
                             onValueChange={(val) => handleStatusChange(order.id, val)}
