@@ -104,6 +104,15 @@ export function AdminOrders() {
                   </Select>
                 </TableCell>
                 <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Print E-Receipt"
+                      onClick={() => printReceipt(order)}
+                    >
+                      <Printer className="w-4 h-4 text-primary" />
+                    </Button>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
@@ -207,6 +216,7 @@ export function AdminOrders() {
                       </DialogContent>
                     )}
                   </Dialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

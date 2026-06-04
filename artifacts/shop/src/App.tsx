@@ -20,6 +20,7 @@ import { AdminCategories } from "@/pages/admin/categories";
 import { AdminOrders } from "@/pages/admin/orders";
 import { AdminBanners } from "@/pages/admin/banners";
 import { AdminSettings } from "@/pages/admin/settings";
+import { AdminCustomers } from "@/pages/admin/customers";
 import { WishlistPage } from "@/pages/wishlist";
 import { SignInPage } from "@/pages/auth/signin";
 import { SignUpPage } from "@/pages/auth/signup";
@@ -60,6 +61,7 @@ function Router() {
       <Route path="/admin/categories" component={AdminCategories} />
       <Route path="/admin/orders" component={AdminOrders} />
       <Route path="/admin/banners" component={AdminBanners} />
+      <Route path="/admin/customers" component={AdminCustomers} />
       <Route path="/admin/settings" component={AdminSettings} />
       <Route component={NotFound} />
     </Switch>

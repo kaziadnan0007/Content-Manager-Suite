@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Package, Tags, ShoppingCart,
   Image as ImageIcon, Settings, LogOut, Menu, Store,
-  Bell, X, CheckCircle2, Clock
+  Bell, X, CheckCircle2, Clock, Users
 } from "lucide-react";
 import { useAdminLogout } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -180,6 +180,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/admin/orders", icon: ShoppingCart, label: "Orders" },
+    { href: "/admin/customers", icon: Users, label: "Customers" },
     { href: "/admin/products", icon: Package, label: "Products" },
     { href: "/admin/categories", icon: Tags, label: "Categories" },
     { href: "/admin/banners", icon: ImageIcon, label: "Banners" },

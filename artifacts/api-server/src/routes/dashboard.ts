@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { ordersTable, productsTable, categoriesTable } from "@workspace/db";
+import { ordersTable, productsTable, categoriesTable, customers } from "@workspace/db";
 import { count, sum, eq, gte, desc } from "drizzle-orm";
-import { sql } from "drizzle-orm";
 
 const router = Router();
 
@@ -22,6 +21,9 @@ router.get("/dashboard/stats", async (req, res) => {
       bkashRevResult,
       rocketRevResult,
       codRevResult,
+      totalCustomersResult,
+      newCustomersTodayResult,
+      deliveredOrdersResult,
     ] = await Promise.all([
       db.select({ total: count() }).from(ordersTable),
       db.select({ total: count() }).from(ordersTable).where(eq(ordersTable.status, "pending")),
@@ -33,16 +35,22 @@ router.get("/dashboard/stats", async (req, res) => {
       db.select({ total: sum(ordersTable.total) }).from(ordersTable).where(eq(ordersTable.paymentMethod, "bkash")),
       db.select({ total: sum(ordersTable.total) }).from(ordersTable).where(eq(ordersTable.paymentMethod, "rocket")),
       db.select({ total: sum(ordersTable.total) }).from(ordersTable).where(eq(ordersTable.paymentMethod, "cod")),
+      db.select({ total: count() }).from(customers),
+      db.select({ total: count() }).from(customers).where(gte(customers.createdAt, todayStart)),
+      db.select({ total: count() }).from(ordersTable).where(eq(ordersTable.status, "delivered")),
     ]);
 
     res.json({
       totalOrders: Number(totalOrdersResult[0]?.total ?? 0),
       pendingOrders: Number(pendingOrdersResult[0]?.total ?? 0),
+      deliveredOrders: Number(deliveredOrdersResult[0]?.total ?? 0),
       totalRevenue: Number(totalRevenueResult[0]?.total ?? 0),
       totalProducts: Number(totalProductsResult[0]?.total ?? 0),
       totalCategories: Number(totalCategoriesResult[0]?.total ?? 0),
       todayOrders: Number(todayOrdersResult[0]?.total ?? 0),
       todayRevenue: Number(todayRevenueResult[0]?.total ?? 0),
+      totalCustomers: Number(totalCustomersResult[0]?.total ?? 0),
+      newCustomersToday: Number(newCustomersTodayResult[0]?.total ?? 0),
       revenueByPayment: {
         bkash: Number(bkashRevResult[0]?.total ?? 0),
         rocket: Number(rocketRevResult[0]?.total ?? 0),

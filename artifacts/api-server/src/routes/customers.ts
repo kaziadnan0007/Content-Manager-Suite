@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { customers } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { sendWelcomeEmail, sendTelegramNewCustomer } from "../lib/notifier";
@@ -45,7 +45,9 @@ async function ensureCustomersTable() {
 }
 ensureCustomersTable();
 
-/* ─── Register — auto-activates immediately, no OTP needed ─────────────── */
+/* ─── Register — OTP must be verified BEFORE calling this ──────────────── */
+/* Creates the account with isVerified: true (OTP already verified on FE).  */
+/* Fires Telegram new-customer notification + welcome email.                 */
 router.post("/customers/register", async (req, res) => {
   const { name, phone, email, password } = req.body;
   if (!name || !phone || !password) {
@@ -72,11 +74,10 @@ router.post("/customers/register", async (req, res) => {
         .values({ name, phone, email: email || null, passwordHash: hash, isVerified: true, sessionToken: token })
         .returning();
     }
+
     const timestamp = new Date().toLocaleString("en-GB", { timeZone: "Asia/Dhaka" });
 
-    if (customer!.email) {
-      sendWelcomeEmail(customer!.email, customer!.name).catch(() => {});
-    }
+    // Fire Telegram and welcome email after OTP-verified registration
     sendTelegramNewCustomer({
       customerName: customer!.name,
       email: customer!.email,
@@ -84,17 +85,28 @@ router.post("/customers/register", async (req, res) => {
       timestamp,
     }).catch(() => {});
 
+    if (customer!.email) {
+      sendWelcomeEmail(customer!.email, customer!.name).catch(() => {});
+    }
+
     res.json({
       success: true,
       token,
-      customer: { id: customer!.id, name: customer!.name, phone: customer!.phone, email: customer!.email, address: customer!.address, city: customer!.city }
+      customer: {
+        id: customer!.id,
+        name: customer!.name,
+        phone: customer!.phone,
+        email: customer!.email,
+        address: customer!.address,
+        city: customer!.city,
+      },
     });
   } catch {
     res.status(500).json({ error: "Registration failed. Please try again." });
   }
 });
 
-/* ─── Activate after OTP verified ──────────────────────────────────────── */
+/* ─── Activate after OTP verified (legacy / reset flow) ─────────────────── */
 router.post("/customers/activate", async (req, res) => {
   const { phone } = req.body;
   if (!phone) return res.status(400).json({ error: "Phone required" });
@@ -108,7 +120,14 @@ router.post("/customers/activate", async (req, res) => {
     res.json({
       success: true,
       token,
-      customer: { id: customer.id, name: customer.name, phone: customer.phone, email: customer.email, address: customer.address, city: customer.city }
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        phone: customer.phone,
+        email: customer.email,
+        address: customer.address,
+        city: customer.city,
+      },
     });
   } catch {
     res.status(500).json({ error: "Activation failed" });
@@ -130,7 +149,7 @@ router.post("/customers/login", async (req, res) => {
     res.json({
       success: true,
       token,
-      customer: { id: customer.id, name: customer.name, phone: customer.phone, email: customer.email, address: customer.address, city: customer.city }
+      customer: { id: customer.id, name: customer.name, phone: customer.phone, email: customer.email, address: customer.address, city: customer.city },
     });
   } catch {
     res.status(500).json({ error: "Login failed" });
@@ -202,6 +221,31 @@ router.post("/customers/logout", async (req, res) => {
     await db.update(customers).set({ sessionToken: null }).where(eq(customers.sessionToken, token)).catch(() => {});
   }
   res.json({ success: true });
+});
+
+/* ─── Admin: list all customers ─────────────────────────────────────────── */
+router.get("/admin/customers", async (req, res) => {
+  if (!req.session?.adminId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  try {
+    const all = await db
+      .select({
+        id: customers.id,
+        name: customers.name,
+        phone: customers.phone,
+        email: customers.email,
+        isVerified: customers.isVerified,
+        createdAt: customers.createdAt,
+      })
+      .from(customers)
+      .orderBy(desc(customers.createdAt))
+      .limit(500);
+
+    res.json({ customers: all, total: all.length });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch customers" });
+  }
 });
 
 export default router;
