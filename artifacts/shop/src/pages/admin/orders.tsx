@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Eye, Printer } from "lucide-react";
 import { format } from "date-fns";
-import { printReceipt } from "@/lib/receipt";
+import { EReceiptDialog } from "@/components/e-receipt-dialog";
 
 export function AdminOrders() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -17,6 +17,7 @@ export function AdminOrders() {
   const queryClient = useQueryClient();
 
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [receiptOrder, setReceiptOrder] = useState<any>(null);
 
   const handleStatusChange = (orderId: number, newStatus: string) => {
     updateOrderStatus.mutate({ id: orderId, data: { status: newStatus as OrderStatusUpdateStatus } }, {
@@ -31,18 +32,25 @@ export function AdminOrders() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500';
-      case 'confirmed': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-500';
+      case 'pending':    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500';
+      case 'confirmed':  return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-500';
       case 'processing': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-500';
-      case 'shipped': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-500';
-      case 'delivered': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500';
-      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-500';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'shipped':    return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-500';
+      case 'delivered':  return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500';
+      case 'cancelled':  return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-500';
+      default:           return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
     <AdminLayout>
+      {/* E-Receipt modal (in-page, no popup) */}
+      <EReceiptDialog
+        order={receiptOrder}
+        open={!!receiptOrder}
+        onClose={() => setReceiptOrder(null)}
+      />
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Orders</h1>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -86,8 +94,8 @@ export function AdminOrders() {
                 <TableCell className="font-bold text-primary">BDT {order.total}</TableCell>
                 <TableCell className="uppercase text-xs font-bold">{order.paymentMethod}</TableCell>
                 <TableCell>
-                  <Select 
-                    value={order.status} 
+                  <Select
+                    value={order.status}
                     onValueChange={(val) => handleStatusChange(order.id, val)}
                   >
                     <SelectTrigger className={`w-[130px] h-8 text-xs font-bold uppercase ${getStatusColor(order.status)}`}>
@@ -103,123 +111,132 @@ export function AdminOrders() {
                     </SelectContent>
                   </Select>
                 </TableCell>
+
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
+                    {/* 🧾 E-Receipt button — opens in-page modal */}
                     <Button
                       variant="ghost"
                       size="icon"
-                      title="Print E-Receipt"
-                      onClick={() => printReceipt(order)}
+                      title="View E-Receipt"
+                      onClick={() => setReceiptOrder(order)}
+                      className="text-primary hover:bg-primary/10"
                     >
-                      <Printer className="w-4 h-4 text-primary" />
+                      <Printer className="w-4 h-4" />
                     </Button>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </DialogTrigger>
-                    {selectedOrder?.id === order.id && (
-                      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle className="text-2xl flex items-center justify-between">
-                            Order #{order.id}
-                            <span className={`text-xs px-3 py-1 rounded-full uppercase ${getStatusColor(order.status)}`}>
-                              {order.status}
-                            </span>
-                          </DialogTitle>
-                        </DialogHeader>
-                        
-                        <div className="grid md:grid-cols-2 gap-6 my-4">
-                          <div className="space-y-4">
-                            <div>
-                              <h3 className="font-bold text-lg mb-2 border-b pb-1">Customer Details</h3>
-                              <p><span className="text-muted-foreground mr-2">Name:</span> {order.customerName}</p>
-                              <p><span className="text-muted-foreground mr-2">Phone:</span> {order.customerPhone}</p>
-                              <p><span className="text-muted-foreground mr-2">Address:</span> {order.customerAddress}</p>
-                              {order.note && <p><span className="text-muted-foreground mr-2">Note:</span> {order.note}</p>}
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-4">
-                            <div>
-                              <h3 className="font-bold text-lg mb-2 border-b pb-1">Payment Info</h3>
-                              <p><span className="text-muted-foreground mr-2">Method:</span> <span className="uppercase font-bold">{order.paymentMethod}</span></p>
-                              {order.paymentMethod !== 'cod' && (
-                                <>
-                                  <p><span className="text-muted-foreground mr-2">Sender No:</span> {order.paymentNumber}</p>
-                                  <p><span className="text-muted-foreground mr-2">TrxID:</span> {order.transactionId}</p>
-                                </>
-                              )}
-                              <p><span className="text-muted-foreground mr-2">Total Amount:</span> <span className="font-bold text-primary text-xl">BDT {order.total}</span></p>
-                            </div>
-                          </div>
-                        </div>
 
-                        <div>
-                          <h3 className="font-bold text-lg mb-2 border-b pb-1">Order Items</h3>
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Product</TableHead>
-                                <TableHead className="text-center">Quantity</TableHead>
-                                <TableHead className="text-right">Price</TableHead>
-                                <TableHead className="text-right">Subtotal</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {order.items?.map((item: any, idx: number) => (
-                                <TableRow key={idx}>
-                                  <TableCell>
-                                    <div className="flex items-center gap-3">
-                                      <div className="w-10 h-10 bg-muted rounded overflow-hidden">
-                                        {item.productImage && <img src={item.productImage} className="w-full h-full object-cover" />}
-                                      </div>
-                                      <span className="font-medium">{item.productName}</span>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell className="text-center">{item.quantity}</TableCell>
-                                  <TableCell className="text-right">BDT {item.price}</TableCell>
-                                  <TableCell className="text-right font-bold">BDT {item.price * item.quantity}</TableCell>
+                    {/* 👁 Order detail */}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      {selectedOrder?.id === order.id && (
+                        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle className="text-2xl flex items-center justify-between">
+                              Order #{order.id}
+                              <span className={`text-xs px-3 py-1 rounded-full uppercase ${getStatusColor(order.status)}`}>
+                                {order.status}
+                              </span>
+                            </DialogTitle>
+                          </DialogHeader>
+
+                          <div className="grid md:grid-cols-2 gap-6 my-4">
+                            <div className="space-y-4">
+                              <div>
+                                <h3 className="font-bold text-lg mb-2 border-b pb-1">Customer Details</h3>
+                                <p><span className="text-muted-foreground mr-2">Name:</span> {order.customerName}</p>
+                                <p><span className="text-muted-foreground mr-2">Phone:</span> {order.customerPhone}</p>
+                                <p><span className="text-muted-foreground mr-2">Address:</span> {order.customerAddress}</p>
+                                {order.note && <p><span className="text-muted-foreground mr-2">Note:</span> {order.note}</p>}
+                              </div>
+                            </div>
+
+                            <div className="space-y-4">
+                              <div>
+                                <h3 className="font-bold text-lg mb-2 border-b pb-1">Payment Info</h3>
+                                <p><span className="text-muted-foreground mr-2">Method:</span> <span className="uppercase font-bold">{order.paymentMethod}</span></p>
+                                {order.paymentMethod !== 'cod' && (
+                                  <>
+                                    <p><span className="text-muted-foreground mr-2">Sender No:</span> {order.paymentNumber}</p>
+                                    <p><span className="text-muted-foreground mr-2">TrxID:</span> {order.transactionId}</p>
+                                  </>
+                                )}
+                                <p><span className="text-muted-foreground mr-2">Total:</span> <span className="font-bold text-primary text-xl">BDT {order.total}</span></p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h3 className="font-bold text-lg mb-2 border-b pb-1">Order Items</h3>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Product</TableHead>
+                                  <TableHead className="text-center">Qty</TableHead>
+                                  <TableHead className="text-right">Price</TableHead>
+                                  <TableHead className="text-right">Subtotal</TableHead>
                                 </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                        
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t gap-3 flex-wrap">
-                          <Button
-                            variant="outline"
-                            className="gap-2 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
-                            onClick={() => printReceipt(order)}
-                          >
-                            <Printer className="w-4 h-4" />
-                            Print E-Receipt
-                          </Button>
-                          <Select 
-                            value={order.status} 
-                            onValueChange={(val) => handleStatusChange(order.id, val)}
-                          >
-                            <SelectTrigger className="w-[200px]">
-                              <SelectValue placeholder="Update Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">PENDING</SelectItem>
-                              <SelectItem value="confirmed">CONFIRMED</SelectItem>
-                              <SelectItem value="processing">PROCESSING</SelectItem>
-                              <SelectItem value="shipped">SHIPPED</SelectItem>
-                              <SelectItem value="delivered">DELIVERED</SelectItem>
-                              <SelectItem value="cancelled">CANCELLED</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </DialogContent>
-                    )}
-                  </Dialog>
+                              </TableHeader>
+                              <TableBody>
+                                {order.items?.map((item: any, idx: number) => (
+                                  <TableRow key={idx}>
+                                    <TableCell>
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-muted rounded overflow-hidden">
+                                          {item.productImage && <img src={item.productImage} className="w-full h-full object-cover" />}
+                                        </div>
+                                        <span className="font-medium">{item.productName}</span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">{item.quantity}</TableCell>
+                                    <TableCell className="text-right">BDT {item.price}</TableCell>
+                                    <TableCell className="text-right font-bold">BDT {item.price * item.quantity}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+
+                          <div className="flex items-center justify-between mt-4 pt-4 border-t gap-3 flex-wrap">
+                            <Button
+                              variant="outline"
+                              className="gap-2 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary"
+                              onClick={() => {
+                                setSelectedOrder(null);
+                                setTimeout(() => setReceiptOrder(order), 150);
+                              }}
+                            >
+                              <Printer className="w-4 h-4" />
+                              View E-Receipt
+                            </Button>
+                            <Select
+                              value={order.status}
+                              onValueChange={(val) => handleStatusChange(order.id, val)}
+                            >
+                              <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder="Update Status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">PENDING</SelectItem>
+                                <SelectItem value="confirmed">CONFIRMED</SelectItem>
+                                <SelectItem value="processing">PROCESSING</SelectItem>
+                                <SelectItem value="shipped">SHIPPED</SelectItem>
+                                <SelectItem value="delivered">DELIVERED</SelectItem>
+                                <SelectItem value="cancelled">CANCELLED</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </DialogContent>
+                      )}
+                    </Dialog>
                   </div>
                 </TableCell>
               </TableRow>
             ))}
+
             {(!ordersData?.orders || ordersData.orders.length === 0) && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
