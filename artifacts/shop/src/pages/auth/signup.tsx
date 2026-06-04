@@ -29,7 +29,6 @@ export function SignUpPage() {
       .catch(() => {});
   }, []);
 
-  // OTP step state
   const [otp, setOtp] = useState("");
   const [otpErr, setOtpErr] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
@@ -52,10 +51,10 @@ export function SignUpPage() {
     }, 1000);
   }
 
-  // Step 1: validate form → send OTP
   const sendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr("");
+    if (!form.email) { setErr("Email দিন — OTP email-এ পাঠানো হবে।"); return; }
     if (form.password !== form.confirm) { setErr("Passwords do not match"); return; }
     if (form.password.length < 6) { setErr("Password must be at least 6 characters"); return; }
     setLoading(true);
@@ -63,7 +62,7 @@ export function SignUpPage() {
       const r = await fetch("/api/otp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: form.phone, email: form.email || undefined }),
+        body: JSON.stringify({ phone: form.phone, email: form.email }),
       });
       const d = await r.json();
       if (!r.ok) { setErr(d.error || "Failed to send OTP"); return; }
@@ -74,8 +73,6 @@ export function SignUpPage() {
         title: "OTP Sent!",
         description: d.emailSent
           ? `6-digit code sent to your email (${form.email})`
-          : d.smsSent
-          ? `Code sent via SMS to ${form.phone}`
           : `Demo mode — see the code below`,
       });
     } catch { setErr("Network error. Please try again."); }
@@ -88,7 +85,7 @@ export function SignUpPage() {
       const r = await fetch("/api/otp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: form.phone, email: form.email || undefined }),
+        body: JSON.stringify({ phone: form.phone, email: form.email }),
       });
       const d = await r.json();
       if (d.demoMode && d.demoCode) setDemoCode(d.demoCode);
@@ -97,13 +94,11 @@ export function SignUpPage() {
     } finally { setResending(false); }
   };
 
-  // Step 2: verify OTP → register → login
   const verifyAndRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length !== 6) { setOtpErr("Enter the 6-digit code"); return; }
     setOtpLoading(true); setOtpErr("");
     try {
-      // 1. Verify OTP
       const vr = await fetch("/api/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -112,7 +107,6 @@ export function SignUpPage() {
       const vd = await vr.json();
       if (!vr.ok) { setOtpErr(vd.error || "Incorrect code"); return; }
 
-      // 2. Register account (OTP already verified — safe to create account now)
       const rr = await fetch("/api/customers/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,9 +120,8 @@ export function SignUpPage() {
       const rd = await rr.json();
       if (!rr.ok) { setOtpErr(rd.error || "Registration failed"); return; }
 
-      // 3. Auto-login
       login(rd.token, rd.customer);
-      toast({ title: "Account created! 🎉", description: `Welcome to AcholGatha, ${rd.customer.name}!` });
+      toast({ title: "Account created!", description: `Welcome to AcholGatha, ${rd.customer.name}!` });
       nav("/profile");
     } catch { setOtpErr("Network error. Try again."); }
     finally { setOtpLoading(false); }
@@ -139,7 +132,7 @@ export function SignUpPage() {
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-gradient-to-br from-background to-accent/20">
         <div className="w-full max-w-md float-in">
 
-          {/* ── Step indicator ── */}
+          {/* Step indicator */}
           <div className="flex items-center justify-center gap-3 mb-8">
             {[
               { n: 1, label: "Fill Form", active: step === "form", done: step !== "form" },
@@ -158,7 +151,7 @@ export function SignUpPage() {
             ))}
           </div>
 
-          {/* ── Step 1: Form ── */}
+          {/* Step 1: Form */}
           {step === "form" && (
             <>
               <div className="text-center mb-6">
@@ -171,6 +164,7 @@ export function SignUpPage() {
 
               <div className="bg-card border rounded-2xl shadow-lg p-7">
                 <form onSubmit={sendOtp} className="space-y-4">
+
                   <div className="space-y-1.5">
                     <Label className="font-semibold text-sm">Full Name *</Label>
                     <div className="relative">
@@ -180,18 +174,33 @@ export function SignUpPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="font-semibold text-sm">Phone Number * <span className="text-muted-foreground font-normal">(OTP will be sent here)</span></Label>
+                    <Label className="font-semibold text-sm">Phone Number *</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input type="tel" placeholder="01XXXXXXXXX" className="pl-9 h-11" value={form.phone} onChange={set("phone")} required />
                     </div>
+                    <div className="flex items-start gap-2 text-xs bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 rounded-lg px-3 py-2 font-medium">
+                      <span className="shrink-0">⚠️</span>
+                      <span>Phone-এ OTP যাবে <strong>না</strong> — নিচে Email দিন, OTP সেখানে আসবে।</span>
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="font-semibold text-sm">Email <span className="text-muted-foreground font-normal">(optional — OTP sent to email if provided)</span></Label>
+                    <Label className="font-semibold text-sm flex items-center gap-2">
+                      <Mail className="w-3.5 h-3.5 text-primary" />
+                      Email
+                      <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">OTP এখানে আসবে</span>
+                    </Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input type="email" placeholder="email@example.com" className="pl-9 h-11" value={form.email} onChange={set("email")} />
+                      <Input
+                        type="email"
+                        placeholder="yourname@gmail.com"
+                        className="pl-9 h-11 border-primary/40 focus:border-primary"
+                        value={form.email}
+                        onChange={set("email")}
+                        required
+                      />
                     </div>
                   </div>
 
@@ -224,7 +233,7 @@ export function SignUpPage() {
                   )}
 
                   <Button type="submit" className="w-full h-12 font-bold text-base neon-glow" disabled={loading}>
-                    {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending OTP…</> : "Send OTP & Continue →"}
+                    {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending OTP...</> : "Send OTP & Continue →"}
                   </Button>
                 </form>
 
@@ -243,9 +252,9 @@ export function SignUpPage() {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-foreground">Email ছাড়া অর্ডার করতে চান?</p>
+                    <p className="font-bold text-sm text-foreground">Email নেই? Facebook-এ অর্ডার করুন</p>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                      আমাদের Facebook পেজে মেসেজ করুন — email ছাড়াই অর্ডার করা যাবে।
+                      Account ছাড়াই আমাদের Facebook পেজে message করে order দিতে পারবেন।
                     </p>
                     {facebookUrl ? (
                       <a
@@ -268,7 +277,7 @@ export function SignUpPage() {
             </>
           )}
 
-          {/* ── Step 2: OTP Verify ── */}
+          {/* Step 2: OTP Verify */}
           {step === "otp" && (
             <>
               <div className="text-center mb-6">
@@ -277,10 +286,8 @@ export function SignUpPage() {
                 </div>
                 <h1 className="text-2xl font-black tracking-tight">Enter OTP</h1>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  Code sent to{" "}
-                  <strong className="text-foreground">
-                    {form.email || form.phone}
-                  </strong>
+                  Code sent to email:{" "}
+                  <strong className="text-foreground">{form.email}</strong>
                 </p>
               </div>
 
@@ -314,7 +321,7 @@ export function SignUpPage() {
 
                   <Button type="submit" className="w-full h-12 font-bold text-base neon-glow" disabled={otpLoading || otp.length !== 6}>
                     {otpLoading
-                      ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating Account…</>
+                      ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating Account...</>
                       : <><CheckCircle2 className="w-4 h-4 mr-2" />Verify & Create Account</>}
                   </Button>
                 </form>
