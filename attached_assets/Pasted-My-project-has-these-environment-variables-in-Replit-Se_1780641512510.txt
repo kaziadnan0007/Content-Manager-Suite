@@ -1,0 +1,100 @@
+My project has these environment 
+variables in Replit Secrets:
+
+- TELEGRAM_BOT_TOKEN
+- TELEGRAM_GROUP_ID
+- GMAIL_USER
+- GMAIL_APP_PASSWORD
+
+Integrate Telegram and Gmail into 
+existing project:
+
+1. TELEGRAM NOTIFICATIONS:
+In api-server/src/lib/notifier.ts
+Add sendTelegramMessage function.
+
+When new order confirmed, send to 
+Telegram group:
+🛒 NEW ORDER CONFIRMED
+━━━━━━━━━━━━━━━
+👤 Name: {name}
+📞 Phone: {phone}
+📧 Email: {email or "Not provided"}
+📍 Address: {address}, {city}
+📦 Product: {productName}
+🔢 Quantity: {quantity}
+💰 Total: {totalPrice}
+🕐 Time: {timestamp}
+✅ Status: CONFIRMED
+━━━━━━━━━━━━━━━
+
+When new customer registers:
+🆕 NEW CUSTOMER
+━━━━━━━━━━━━━━━
+👤 Name: {name}
+📞 Phone: {phone}
+📧 Email: {email or "Not provided"}
+🕐 Time: {timestamp}
+━━━━━━━━━━━━━━━
+
+2. GMAIL NOTIFICATIONS:
+In api-server/src/lib/notifier.ts
+Add sendEmail function using nodemailer
+with GMAIL_USER and GMAIL_APP_PASSWORD.
+
+After order confirmed (if email given):
+Subject: "✅ Order Confirmed - AcholGatha"
+Body:
+"Dear {name},
+
+Your order has been approved!
+You will receive delivery within 
+3-5 working days.
+
+Order Details:
+- Product: {productName}
+- Quantity: {quantity}
+- Address: {address}, {city}
+- Order Time: {timestamp}
+
+Thank you for shopping with us!
+AcholGatha Team"
+
+After new customer registers 
+(if email given):
+Subject: "🎉 Welcome to AcholGatha!"
+Body:
+"Dear {name},
+
+Welcome to AcholGatha!
+Your account has been successfully 
+created.
+
+Thank you for joining us!
+AcholGatha Team"
+
+3. CALL THESE FUNCTIONS:
+In api-server/src/routes/orders.ts
+After order confirmed:
+- Call sendTelegramMessage(orderDetails)
+- Call sendEmail(customerEmail, orderDetails)
+
+In api-server/src/routes/auth.ts
+After customer registers:
+- Call sendTelegramMessage(customerDetails)
+- Call sendEmail(customerEmail, welcomeDetails)
+
+4. INSTALL if not already installed:
+- node-telegram-bot-api
+- @types/node-telegram-bot-api
+- nodemailer
+- @types/nodemailer
+
+5. RULES:
+- TypeScript only
+- Email is always optional
+- Telegram always works with or 
+  without email
+- DO NOT change database schemas
+- DO NOT break existing code
+- Show only new/modified code parts
