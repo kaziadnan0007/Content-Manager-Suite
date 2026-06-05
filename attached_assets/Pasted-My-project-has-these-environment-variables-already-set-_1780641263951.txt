@@ -1,0 +1,92 @@
+My project has these environment variables 
+already set in Replit Secrets:
+
+- DATABASE_URL (Supabase PostgreSQL)
+- TELEGRAM_BOT_TOKEN
+- TELEGRAM_GROUP_ID
+- GMAIL_USER
+- GMAIL_APP_PASSWORD
+- ADMIN_PASSWORD
+- SESSION_SECRET
+
+Now integrate all of these into the 
+existing project:
+
+1. DATABASE:
+Update db/src/index.ts to connect 
+to Supabase using DATABASE_URL.
+Run Drizzle migrations.
+
+2. TELEGRAM:
+In api-server/src/lib/notifier.ts
+Add function to send Telegram message
+to TELEGRAM_GROUP_ID using 
+TELEGRAM_BOT_TOKEN when:
+- New order confirmed
+- New customer registered
+
+Telegram message format for new order:
+🛒 NEW ORDER CONFIRMED
+━━━━━━━━━━━━━━━
+👤 Name: {name}
+📞 Phone: {phone}
+📧 Email: {email or "Not provided"}
+📍 Address: {address}, {city}
+📦 Product: {productName}
+🔢 Quantity: {quantity}
+💰 Total: {totalPrice}
+🕐 Time: {timestamp}
+✅ Status: CONFIRMED
+━━━━━━━━━━━━━━━
+
+Telegram message for new customer:
+🆕 NEW CUSTOMER REGISTERED
+━━━━━━━━━━━━━━━
+👤 Name: {name}
+📞 Phone: {phone}
+📧 Email: {email or "Not provided"}
+🕐 Time: {timestamp}
+━━━━━━━━━━━━━━━
+
+3. GMAIL:
+In api-server/src/lib/notifier.ts
+Add nodemailer function using 
+GMAIL_USER and GMAIL_APP_PASSWORD.
+
+Send email to customer after 
+order confirmed (if email provided):
+Subject: "✅ Order Confirmed - AcholGatha"
+Body:
+"Dear {name},
+Your order has been approved!
+Delivery within 3-5 working days.
+Product: {productName}
+Address: {address}, {city}
+Thank you for shopping with us!
+AcholGatha Team"
+
+Send welcome email when new customer 
+registers (if email provided):
+Subject: "🎉 Welcome to AcholGatha!"
+Body:
+"Dear {name},
+Welcome to AcholGatha!
+Your account has been created.
+Thank you for joining us!
+AcholGatha Team"
+
+4. INSTALL these packages if not installed:
+- node-telegram-bot-api
+- @types/node-telegram-bot-api
+- nodemailer
+- @types/nodemailer
+
+5. RULES:
+- TypeScript only
+- DO NOT change database schemas
+- DO NOT remove existing features
+- DO NOT break existing code
+- Show only modified/new code parts
+- Email is always optional
+- Telegram always works regardless 
+  of email
