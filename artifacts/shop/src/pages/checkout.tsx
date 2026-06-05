@@ -214,14 +214,23 @@ export function CheckoutPage() {
             <h1 className="text-4xl font-black text-green-600 mb-3">
               ✅ Order Confirmed!
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-2">
-              <strong className="text-foreground">Your order has been approved!</strong>
+            <p className="text-base text-muted-foreground leading-relaxed mb-6">
+              Your order has been received and is being processed. You will receive delivery within{" "}
+              <strong className="text-foreground">3–5 working days</strong>. 🎉
             </p>
-            <p className="text-base text-muted-foreground leading-relaxed mb-8">
-              You will receive delivery within{" "}
-              <strong className="text-foreground">3–5 working days</strong>.{" "}
-              Thank you for shopping with us! 🎉
-            </p>
+
+            {/* Order Reference Box */}
+            {placedOrderId && (
+              <div className="mb-6 mx-auto max-w-xs w-full bg-card border-2 border-primary/30 rounded-2xl px-6 py-5 shadow-lg shadow-primary/10">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Order Reference Number</p>
+                <div className="text-3xl font-black font-mono tracking-wider text-primary">
+                  AG-{String(placedOrderId).padStart(6, "0")}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Save this number to track your order
+                </p>
+              </div>
+            )}
 
             {formData.customerEmail && (
               <div className="mb-6 px-4 py-3 bg-primary/5 border border-primary/20 rounded-xl text-sm text-muted-foreground">

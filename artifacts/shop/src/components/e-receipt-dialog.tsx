@@ -30,13 +30,13 @@ interface Props {
   onClose: () => void;
 }
 
-const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  pending:    { bg: "#fefce8", text: "#a16207", border: "#fde68a" },
-  confirmed:  { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
-  processing: { bg: "#eef2ff", text: "#4338ca", border: "#c7d2fe" },
-  shipped:    { bg: "#f5f3ff", text: "#6d28d9", border: "#ddd6fe" },
-  delivered:  { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" },
-  cancelled:  { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
+const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
+  pending:    { bg: "#fffbeb", text: "#b45309", border: "#fcd34d", label: "PENDING" },
+  confirmed:  { bg: "#ecfdf5", text: "#065f46", border: "#6ee7b7", label: "CONFIRMED" },
+  processing: { bg: "#eff6ff", text: "#1e40af", border: "#93c5fd", label: "PROCESSING" },
+  shipped:    { bg: "#f5f3ff", text: "#5b21b6", border: "#c4b5fd", label: "SHIPPED" },
+  delivered:  { bg: "#f0fdf4", text: "#14532d", border: "#86efac", label: "DELIVERED" },
+  cancelled:  { bg: "#fef2f2", text: "#991b1b", border: "#fca5a5", label: "CANCELLED" },
 };
 
 export function EReceiptDialog({ order, open, onClose }: Props) {
@@ -51,156 +51,191 @@ export function EReceiptDialog({ order, open, onClose }: Props) {
   });
 
   const subtotal = order.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
-  const sc = STATUS_COLORS[order.status] ?? { bg: "#f9fafb", text: "#374151", border: "#e5e7eb" };
+  const delivery = Number(order.total) - subtotal;
+  const ss = STATUS_STYLES[order.status] ?? { bg: "#f9fafb", text: "#374151", border: "#e5e7eb", label: order.status.toUpperCase() };
   const refCode = `AG-${String(order.id).padStart(6, "0")}`;
 
   const handlePrint = () => {
     const el = receiptRef.current;
     if (!el) return;
-    const printWindow = document.createElement("iframe");
-    printWindow.style.position = "fixed";
-    printWindow.style.top = "-9999px";
-    printWindow.style.left = "-9999px";
-    printWindow.style.width = "0";
-    printWindow.style.height = "0";
-    document.body.appendChild(printWindow);
-    const doc = printWindow.contentWindow?.document;
+    const iframe = document.createElement("iframe");
+    iframe.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:0;height:0;";
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow?.document;
     if (!doc) return;
     doc.open();
-    doc.write(`<!DOCTYPE html><html><head><title>Receipt #${order.id}</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Segoe UI',Arial,sans-serif;color:#1e293b;padding:20px;}
-  @page{margin:1cm;}
-</style>
+    doc.write(`<!DOCTYPE html><html><head><title>Receipt ${refCode}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#fff;}@page{margin:1cm;}</style>
 </head><body>${el.innerHTML}</body></html>`);
     doc.close();
-    printWindow.contentWindow?.focus();
-    printWindow.contentWindow?.print();
-    setTimeout(() => document.body.removeChild(printWindow), 2000);
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+    setTimeout(() => document.body.removeChild(iframe), 2000);
   };
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
       <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-0 gap-0">
         <DialogHeader className="px-6 pt-5 pb-3 border-b flex-row items-center justify-between">
-          <DialogTitle className="text-lg font-bold">E-Receipt — Order #{order.id}</DialogTitle>
+          <DialogTitle className="text-lg font-bold tracking-tight">E-Receipt — {refCode}</DialogTitle>
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
             <X className="w-4 h-4" />
           </Button>
         </DialogHeader>
 
-        {/* Print button bar */}
-        <div className="px-6 py-3 border-b bg-muted/30 flex items-center justify-between gap-3">
-          <p className="text-xs text-muted-foreground">Preview of the receipt below. Click Print to send to printer or save as PDF.</p>
+        <div className="px-6 py-3 border-b bg-muted/20 flex items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">Preview receipt below. Print or save as PDF.</p>
           <Button onClick={handlePrint} className="gap-2 shrink-0 neon-glow">
             <Printer className="w-4 h-4" />
             Print / Save PDF
           </Button>
         </div>
 
-        {/* ── Receipt body (ref'd for printing) ── */}
-        <div ref={receiptRef} className="p-6">
+        {/* Receipt Body */}
+        <div ref={receiptRef} style={{ padding: "24px", background: "#fff", fontFamily: "'Segoe UI', Arial, sans-serif" }}>
 
           {/* Header */}
-          <div style={{ background: "linear-gradient(135deg,#0a1628 0%,#0d2044 100%)", borderRadius: 12, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 0 }}>
+          <div style={{
+            background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f2a4a 100%)",
+            borderRadius: "14px 14px 0 0",
+            padding: "22px 28px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}>
             <div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#00D4FF", letterSpacing: -0.5 }}>AcholGatha</div>
-              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", marginTop: 3 }}>Bangladesh's #1 Online Shop</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: "#00D4FF", letterSpacing: "-0.5px", lineHeight: 1 }}>AcholGatha</div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.45)", fontWeight: 700, letterSpacing: "0.25em", textTransform: "uppercase", marginTop: 5 }}>Bangladesh's #1 Online Shop</div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>E-Receipt</div>
-              <div style={{ fontSize: 26, fontWeight: 900, color: "#fff", letterSpacing: -1 }}>#{order.id}</div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>E-RECEIPT</div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: "#ffffff", letterSpacing: "-1px", lineHeight: 1.1 }}>#{order.id}</div>
+              <div style={{ fontSize: 10, color: "rgba(0,212,255,0.7)", fontWeight: 600, marginTop: 2, letterSpacing: "0.05em" }}>{refCode}</div>
             </div>
           </div>
 
-          {/* Status bar */}
-          <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderTop: "none", borderRadius: "0 0 8px 8px", padding: "8px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <span style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>📅 {dateStr} (Dhaka)</span>
-            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: sc.text, background: sc.bg, border: `1px solid ${sc.border}`, padding: "2px 10px", borderRadius: 999 }}>
-              {order.status}
-            </span>
+          {/* Status & Date Bar */}
+          <div style={{
+            background: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            borderTop: "none",
+            borderRadius: "0 0 10px 10px",
+            padding: "9px 22px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 18,
+          }}>
+            <span style={{ fontSize: 11, color: "#64748b", fontWeight: 500 }}>📅 {dateStr} (Dhaka)</span>
+            <span style={{
+              fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em",
+              color: ss.text, background: ss.bg,
+              border: `1.5px solid ${ss.border}`,
+              padding: "3px 12px", borderRadius: 999,
+            }}>{ss.label}</span>
           </div>
 
-          {/* Info grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-            <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 14px" }}>
-              <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "#94a3b8", marginBottom: 6 }}>👤 Customer</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>{order.customerName}</div>
-              <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>📞 {order.customerPhone}</div>
-              {order.customerAddress && <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>📍 {order.customerAddress}</div>}
+          {/* Info Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
+            {/* Customer */}
+            <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderLeft: "3px solid #00D4FF", borderRadius: 10, padding: "13px 15px" }}>
+              <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "#94a3b8", marginBottom: 7 }}>👤 Customer</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{order.customerName}</div>
+              <div style={{ fontSize: 12, color: "#475569", marginTop: 3 }}>📞 {order.customerPhone}</div>
+              {order.customerAddress && <div style={{ fontSize: 11, color: "#64748b", marginTop: 3, lineHeight: 1.5 }}>📍 {order.customerAddress}</div>}
             </div>
-            <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 14px" }}>
-              <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "#94a3b8", marginBottom: 6 }}>💳 Payment</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", textTransform: "uppercase" }}>{order.paymentMethod}</div>
-              {order.paymentNumber && <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>Sender: {order.paymentNumber}</div>}
-              {order.transactionId && <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>TrxID: {order.transactionId}</div>}
-              {!order.paymentNumber && !order.transactionId && <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>Pay on delivery</div>}
+            {/* Payment */}
+            <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderLeft: "3px solid #10b981", borderRadius: 10, padding: "13px 15px" }}>
+              <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "#94a3b8", marginBottom: 7 }}>💳 Payment</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", textTransform: "uppercase" }}>{order.paymentMethod}</div>
+              {order.paymentNumber && <div style={{ fontSize: 12, color: "#475569", marginTop: 3 }}>Sender: {order.paymentNumber}</div>}
+              {order.transactionId && <div style={{ fontSize: 11, color: "#475569", marginTop: 3 }}>TrxID: {order.transactionId}</div>}
+              {!order.paymentNumber && !order.transactionId && <div style={{ fontSize: 12, color: "#64748b", marginTop: 3 }}>Cash on Delivery</div>}
             </div>
           </div>
 
           {order.note && (
-            <div style={{ background: "#fefce8", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 12px", marginBottom: 14, fontSize: 12, color: "#713f12" }}>
+            <div style={{ background: "#fefce8", border: "1px solid #fde68a", borderRadius: 8, padding: "9px 13px", marginBottom: 16, fontSize: 12, color: "#713f12" }}>
               <strong>📝 Note:</strong> {order.note}
             </div>
           )}
 
-          {/* Items table */}
-          <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "#94a3b8", marginBottom: 8 }}>Order Items</div>
-          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 12 }}>
+          {/* Items Table */}
+          <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.18em", color: "#94a3b8", marginBottom: 9 }}>Order Items</div>
+          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4 }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid #e2e8f0" }}>
-                <th style={{ textAlign: "left", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#94a3b8", padding: "4px 4px 8px" }}>Product</th>
-                <th style={{ textAlign: "center", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#94a3b8", padding: "4px 4px 8px" }}>Qty</th>
-                <th style={{ textAlign: "right", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#94a3b8", padding: "4px 4px 8px" }}>Unit</th>
-                <th style={{ textAlign: "right", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#94a3b8", padding: "4px 4px 8px" }}>Total</th>
+              <tr style={{ background: "#f1f5f9", borderRadius: 6 }}>
+                <th style={{ textAlign: "left", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", padding: "7px 8px 7px 10px", borderRadius: "6px 0 0 6px" }}>Product</th>
+                <th style={{ textAlign: "center", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", padding: "7px 8px" }}>Qty</th>
+                <th style={{ textAlign: "right", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", padding: "7px 8px" }}>Unit</th>
+                <th style={{ textAlign: "right", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", padding: "7px 10px 7px 8px", borderRadius: "0 6px 6px 0" }}>Total</th>
               </tr>
             </thead>
             <tbody>
               {order.items.map((item, i) => (
                 <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                  <td style={{ padding: "8px 4px", fontSize: 13, fontWeight: 600 }}>{item.productName}</td>
-                  <td style={{ padding: "8px 4px", fontSize: 13, textAlign: "center" }}>{item.quantity}</td>
-                  <td style={{ padding: "8px 4px", fontSize: 13, textAlign: "right" }}>BDT {Number(item.price).toLocaleString()}</td>
-                  <td style={{ padding: "8px 4px", fontSize: 13, fontWeight: 700, textAlign: "right" }}>BDT {(Number(item.price) * item.quantity).toLocaleString()}</td>
+                  <td style={{ padding: "9px 8px 9px 10px", fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{item.productName}</td>
+                  <td style={{ padding: "9px 8px", fontSize: 13, textAlign: "center", color: "#475569" }}>{item.quantity}</td>
+                  <td style={{ padding: "9px 8px", fontSize: 13, textAlign: "right", color: "#475569" }}>BDT {Number(item.price).toLocaleString()}</td>
+                  <td style={{ padding: "9px 10px 9px 8px", fontSize: 13, fontWeight: 700, textAlign: "right", color: "#0f172a" }}>BDT {(Number(item.price) * item.quantity).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
           {/* Totals */}
-          <div style={{ borderTop: "2px solid #e2e8f0", paddingTop: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#475569", padding: "3px 0" }}>
+          <div style={{ borderTop: "2px solid #e2e8f0", paddingTop: 12, marginTop: 4 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#64748b", padding: "3px 0" }}>
               <span>Subtotal ({order.items.reduce((s, i) => s + i.quantity, 0)} items)</span>
               <span>BDT {subtotal.toLocaleString()}</span>
             </div>
-            {Number(order.total) - subtotal > 0 && (
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#475569", padding: "3px 0" }}>
+            {delivery > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#64748b", padding: "3px 0" }}>
                 <span>Delivery</span>
-                <span>BDT {(Number(order.total) - subtotal).toLocaleString()}</span>
+                <span>BDT {delivery.toLocaleString()}</span>
               </div>
             )}
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 18, fontWeight: 900, color: "#00a8cc", borderTop: "2px dashed #e2e8f0", marginTop: 8, paddingTop: 10 }}>
+            <div style={{
+              display: "flex", justifyContent: "space-between",
+              fontSize: 18, fontWeight: 900,
+              background: "linear-gradient(135deg, #065f46, #047857)",
+              color: "#ffffff",
+              borderRadius: 10,
+              padding: "10px 16px",
+              marginTop: 10,
+            }}>
               <span>Grand Total</span>
               <span>BDT {Number(order.total).toLocaleString()}</span>
             </div>
           </div>
 
-          {/* Reference */}
-          <div style={{ textAlign: "center", marginTop: 18 }}>
-            <div style={{ display: "inline-block", background: "#f8fafc", border: "1px dashed #e2e8f0", borderRadius: 8, padding: "6px 20px" }}>
-              <div style={{ fontFamily: "monospace", fontSize: 10, color: "#94a3b8", letterSpacing: "0.15em", textTransform: "uppercase" }}>Order Reference</div>
-              <div style={{ fontFamily: "monospace", fontSize: 16, fontWeight: 800, color: "#1e293b", letterSpacing: "0.1em" }}>{refCode}</div>
+          {/* Order Reference */}
+          <div style={{ textAlign: "center", marginTop: 20 }}>
+            <div style={{
+              display: "inline-block",
+              background: "#f8fafc",
+              border: "2px dashed #cbd5e1",
+              borderRadius: 10,
+              padding: "8px 28px",
+            }}>
+              <div style={{ fontFamily: "monospace", fontSize: 9, color: "#94a3b8", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 3 }}>Order Reference</div>
+              <div style={{ fontFamily: "monospace", fontSize: 18, fontWeight: 900, color: "#0f172a", letterSpacing: "0.12em" }}>{refCode}</div>
             </div>
           </div>
 
           {/* Footer */}
-          <div style={{ background: "linear-gradient(135deg,#0a1628 0%,#0d2044 100%)", borderRadius: 10, padding: "14px 20px", textAlign: "center", marginTop: 16 }}>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", lineHeight: 1.7 }}>
+          <div style={{
+            background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)",
+            borderRadius: 12,
+            padding: "16px 24px",
+            textAlign: "center",
+            marginTop: 18,
+          }}>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.8 }}>
               Thank you for shopping with <strong style={{ color: "#00D4FF" }}>AcholGatha</strong>! 🎉
             </div>
             <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 4 }}>
-              Computer-generated receipt — valid without signature.
+              Computer-generated receipt · Valid without signature
             </div>
           </div>
         </div>

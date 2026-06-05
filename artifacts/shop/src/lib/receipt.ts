@@ -27,217 +27,124 @@ export function printReceipt(order: ReceiptOrder, siteName = "AcholGatha") {
     hour: "2-digit", minute: "2-digit",
   });
 
-  const statusColors: Record<string, string> = {
-    pending:    "#d97706",
-    confirmed:  "#2563eb",
-    processing: "#4f46e5",
-    shipped:    "#7c3aed",
-    delivered:  "#16a34a",
-    cancelled:  "#dc2626",
+  const STATUS_STYLES: Record<string, { color: string; bg: string; border: string }> = {
+    pending:    { color: "#b45309", bg: "#fffbeb", border: "#fcd34d" },
+    confirmed:  { color: "#065f46", bg: "#ecfdf5", border: "#6ee7b7" },
+    processing: { color: "#1e40af", bg: "#eff6ff", border: "#93c5fd" },
+    shipped:    { color: "#5b21b6", bg: "#f5f3ff", border: "#c4b5fd" },
+    delivered:  { color: "#14532d", bg: "#f0fdf4", border: "#86efac" },
+    cancelled:  { color: "#991b1b", bg: "#fef2f2", border: "#fca5a5" },
   };
-  const statusColor = statusColors[order.status] ?? "#6b7280";
-
-  const itemRows = order.items.map((item) => `
-    <tr>
-      <td style="padding:8px 4px;border-bottom:1px solid #f3f4f6;">
-        <div style="font-weight:600;font-size:13px;">${item.productName}</div>
-      </td>
-      <td style="padding:8px 4px;border-bottom:1px solid #f3f4f6;text-align:center;font-size:13px;">${item.quantity}</td>
-      <td style="padding:8px 4px;border-bottom:1px solid #f3f4f6;text-align:right;font-size:13px;">BDT ${Number(item.price).toLocaleString()}</td>
-      <td style="padding:8px 4px;border-bottom:1px solid #f3f4f6;text-align:right;font-weight:700;font-size:13px;">BDT ${(Number(item.price) * item.quantity).toLocaleString()}</td>
-    </tr>
-  `).join("");
+  const ss = STATUS_STYLES[order.status] ?? { color: "#374151", bg: "#f9fafb", border: "#e5e7eb" };
+  const refCode = `AG-${String(order.id).padStart(6, "0")}`;
 
   const subtotal = order.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
-  const deliveryNote = order.note || "";
+  const deliveryNote = order.note ?? "";
   const isInsideDhaka = deliveryNote.includes("Inside Dhaka");
   const isOutsideDhaka = deliveryNote.includes("Outside Dhaka");
   const deliveryCharge = isInsideDhaka ? 60 : isOutsideDhaka ? 120 : Number(order.total) - subtotal;
-  const showDeliveryLine = isInsideDhaka || isOutsideDhaka;
+  const showDeliveryLine = isInsideDhaka || isOutsideDhaka || deliveryCharge > 0;
+
+  const itemRows = order.items.map((item, i) => `
+    <tr style="background:${i % 2 === 0 ? "#fff" : "#f9fafb"};">
+      <td style="padding:9px 8px 9px 10px;font-weight:600;font-size:13px;color:#1e293b;">${item.productName}</td>
+      <td style="padding:9px 8px;text-align:center;font-size:13px;color:#475569;">${item.quantity}</td>
+      <td style="padding:9px 8px;text-align:right;font-size:13px;color:#475569;">BDT ${Number(item.price).toLocaleString()}</td>
+      <td style="padding:9px 10px 9px 8px;text-align:right;font-weight:700;font-size:13px;color:#0f172a;">BDT ${(Number(item.price) * item.quantity).toLocaleString()}</td>
+    </tr>
+  `).join("");
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Receipt #${order.id} — ${siteName}</title>
+  <title>${refCode} — ${siteName}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f8fafc;
-      color: #1e293b;
-      padding: 0;
-    }
-    .page {
-      max-width: 680px;
-      margin: 32px auto;
-      background: #fff;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 4px 32px rgba(0,0,0,.10);
-    }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f1f5f9; color: #1a1a2e; }
+    .page { max-width: 680px; margin: 28px auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.13); }
 
-    /* ── Header ── */
+    /* Header */
     .header {
-      background: linear-gradient(135deg, #0a1628 0%, #0d2044 100%);
-      padding: 28px 32px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f2a4a 100%);
+      padding: 26px 32px 22px;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .brand { display: flex; flex-direction: column; }
-    .brand-name {
-      font-size: 22px;
-      font-weight: 900;
-      color: #00D4FF;
-      letter-spacing: -0.5px;
-    }
-    .brand-sub {
-      font-size: 9px;
-      color: rgba(255,255,255,0.45);
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin-top: 2px;
-    }
-    .receipt-badge {
-      text-align: right;
-    }
-    .receipt-label {
-      font-size: 10px;
-      color: rgba(255,255,255,0.45);
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-    .receipt-id {
-      font-size: 26px;
-      font-weight: 900;
-      color: #fff;
-      letter-spacing: -1px;
-    }
+    .brand-name { font-size: 24px; font-weight: 900; color: #00D4FF; letter-spacing: -0.5px; line-height: 1; }
+    .brand-sub { font-size: 9px; color: rgba(255,255,255,0.4); font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; margin-top: 5px; }
+    .receipt-label { font-size: 9px; color: rgba(255,255,255,0.4); font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; text-align: right; }
+    .receipt-id { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.1; text-align: right; }
+    .receipt-ref { font-size: 10px; color: rgba(0,212,255,0.7); font-weight: 600; margin-top: 2px; letter-spacing: 0.05em; text-align: right; }
 
-    /* ── Status bar ── */
+    /* Status bar */
     .status-bar {
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 10px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-    }
-    .status-pill {
-      display: inline-block;
-      padding: 3px 12px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: ${statusColor};
-      background: ${statusColor}18;
-      border: 1px solid ${statusColor}40;
+      background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+      padding: 10px 32px; display: flex; align-items: center; justify-content: space-between; font-size: 11px;
     }
     .date-text { color: #64748b; font-weight: 500; }
+    .status-pill {
+      display: inline-block; padding: 3px 13px; border-radius: 999px;
+      font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+      color: ${ss.color}; background: ${ss.bg}; border: 1.5px solid ${ss.border};
+    }
 
-    /* ── Body ── */
-    .body { padding: 28px 32px; }
+    /* Body */
+    .body { padding: 26px 32px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    .info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 13px 15px; }
+    .info-box.customer { border-left: 3px solid #00D4FF; }
+    .info-box.payment  { border-left: 3px solid #10b981; }
+    .info-box h4 { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; color: #94a3b8; margin-bottom: 7px; }
+    .info-row { font-size: 13px; line-height: 1.65; }
+    .info-row strong { font-weight: 700; color: #0f172a; }
+    .info-row span { color: #475569; font-size: 12px; }
 
-    /* ── 2-column info ── */
-    .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-    .info-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 14px 16px;
-    }
-    .info-box h4 {
-      font-size: 9px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: #94a3b8;
-      margin-bottom: 8px;
-    }
-    .info-row { font-size: 13px; line-height: 1.7; }
-    .info-row strong { font-weight: 700; color: #1e293b; }
-    .info-row span { color: #475569; }
-
-    /* ── Items table ── */
-    .section-title {
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: #94a3b8;
-      margin-bottom: 10px;
-    }
-    table { width: 100%; border-collapse: collapse; }
-    thead th {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #94a3b8;
-      padding: 6px 4px 8px;
-      border-bottom: 2px solid #e2e8f0;
-    }
-    thead th:nth-child(1) { text-align: left; }
+    .section-title { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.18em; color: #94a3b8; margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; border-radius: 8px; overflow: hidden; }
+    thead { background: #f1f5f9; }
+    thead th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; padding: 7px 8px; }
+    thead th:first-child { text-align: left; padding-left: 10px; }
     thead th:nth-child(2) { text-align: center; }
-    thead th:nth-child(3),
-    thead th:nth-child(4) { text-align: right; }
+    thead th:nth-child(3), thead th:nth-child(4) { text-align: right; }
+    thead th:last-child { padding-right: 10px; }
 
-    /* ── Totals ── */
-    .totals {
-      margin-top: 12px;
-      border-top: 2px solid #e2e8f0;
-      padding-top: 12px;
-    }
-    .total-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      padding: 4px 0;
-      color: #475569;
-    }
-    .total-row.grand {
-      font-size: 17px;
-      font-weight: 900;
-      color: #00a8cc;
-      border-top: 2px dashed #e2e8f0;
-      margin-top: 8px;
-      padding-top: 10px;
+    .totals { margin-top: 12px; border-top: 2px solid #e2e8f0; padding-top: 12px; }
+    .total-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: #64748b; }
+    .grand-total {
+      display: flex; justify-content: space-between;
+      background: linear-gradient(135deg, #065f46, #047857);
+      color: #fff; font-size: 18px; font-weight: 900;
+      border-radius: 10px; padding: 11px 16px; margin-top: 10px;
     }
 
-    /* ── Footer ── */
+    .order-ref { text-align: center; margin-top: 20px; }
+    .order-ref-box {
+      display: inline-block; background: #f8fafc;
+      border: 2px dashed #cbd5e1; border-radius: 10px; padding: 8px 28px;
+    }
+    .order-ref-label { font-family: monospace; font-size: 9px; color: #94a3b8; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 3px; }
+    .order-ref-code { font-family: monospace; font-size: 18px; font-weight: 900; color: #0f172a; letter-spacing: 0.12em; }
+
     .footer {
-      background: linear-gradient(135deg, #0a1628 0%, #0d2044 100%);
-      padding: 18px 32px;
-      text-align: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      padding: 18px 32px; text-align: center;
     }
-    .footer p {
-      font-size: 12px;
-      color: rgba(255,255,255,0.55);
-      line-height: 1.6;
-    }
+    .footer p { font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.7; }
     .footer strong { color: #00D4FF; }
 
-    /* ── Divider ── */
-    .divider {
-      border: none;
-      border-top: 1px dashed #e2e8f0;
-      margin: 20px 0;
+    .no-print { text-align: center; padding: 16px 0 4px; }
+    .btn-print {
+      background: linear-gradient(135deg, #00D4FF, #0099cc);
+      color: #0f172a; font-weight: 800; font-size: 14px;
+      padding: 10px 32px; border: none; border-radius: 8px; cursor: pointer; margin-right: 8px;
+    }
+    .btn-close {
+      background: #f1f5f9; color: #475569; font-weight: 700; font-size: 14px;
+      padding: 10px 24px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;
     }
 
     @media print {
-      body { background: #fff; padding: 0; }
+      body { background: #fff; }
       .page { margin: 0; border-radius: 0; box-shadow: none; max-width: 100%; }
       .no-print { display: none !important; }
     }
@@ -245,119 +152,86 @@ export function printReceipt(order: ReceiptOrder, siteName = "AcholGatha") {
 </head>
 <body>
 
-<!-- Print button (hidden on print) -->
-<div class="no-print" style="text-align:center;padding:16px 0 0;">
-  <button onclick="window.print()"
-    style="background:#00D4FF;color:#0a1628;font-weight:800;font-size:14px;padding:10px 32px;border:none;border-radius:8px;cursor:pointer;margin-right:8px;">
-    🖨️ Print Receipt
-  </button>
-  <button onclick="window.close()"
-    style="background:#f1f5f9;color:#475569;font-weight:700;font-size:14px;padding:10px 24px;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;">
-    Close
-  </button>
+<div class="no-print">
+  <button class="btn-print" onclick="window.print()">🖨️ Print Receipt</button>
+  <button class="btn-close" onclick="window.close()">Close</button>
 </div>
 
 <div class="page">
-  <!-- Header -->
   <div class="header">
-    <div class="brand">
+    <div>
       <div class="brand-name">${siteName}</div>
       <div class="brand-sub">Bangladesh's #1 Online Shop</div>
     </div>
-    <div class="receipt-badge">
+    <div>
       <div class="receipt-label">E-Receipt</div>
       <div class="receipt-id">#${order.id}</div>
+      <div class="receipt-ref">${refCode}</div>
     </div>
   </div>
 
-  <!-- Status bar -->
   <div class="status-bar">
     <span class="date-text">📅 ${dateStr} (Dhaka)</span>
     <span class="status-pill">${order.status.toUpperCase()}</span>
   </div>
 
-  <!-- Body -->
   <div class="body">
-
-    <!-- Info grid -->
     <div class="info-grid">
-      <div class="info-box">
+      <div class="info-box customer">
         <h4>👤 Customer</h4>
         <div class="info-row"><strong>${order.customerName}</strong></div>
         <div class="info-row"><span>📞 ${order.customerPhone}</span></div>
         ${order.customerAddress ? `<div class="info-row"><span>📍 ${order.customerAddress}</span></div>` : ""}
       </div>
-      <div class="info-box">
+      <div class="info-box payment">
         <h4>💳 Payment</h4>
         <div class="info-row"><strong>${order.paymentMethod.toUpperCase()}</strong></div>
         ${order.paymentNumber ? `<div class="info-row"><span>Sender: ${order.paymentNumber}</span></div>` : ""}
         ${order.transactionId ? `<div class="info-row"><span>TrxID: ${order.transactionId}</span></div>` : ""}
-        ${!order.paymentNumber && !order.transactionId ? `<div class="info-row"><span>Pay on delivery</span></div>` : ""}
+        ${!order.paymentNumber && !order.transactionId ? `<div class="info-row"><span>Cash on Delivery</span></div>` : ""}
       </div>
     </div>
 
-    ${order.note ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:20px;font-size:12px;color:#713f12;">
-      <strong>📝 Note:</strong> ${order.note}
-    </div>` : ""}
+    ${order.note ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:12px;color:#713f12;"><strong>📝 Note:</strong> ${order.note}</div>` : ""}
 
-    <!-- Items -->
     <div class="section-title">Order Items</div>
     <table>
       <thead>
-        <tr>
-          <th>Product</th>
-          <th>Qty</th>
-          <th>Unit Price</th>
-          <th>Subtotal</th>
-        </tr>
+        <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr>
       </thead>
-      <tbody>
-        ${itemRows}
-      </tbody>
+      <tbody>${itemRows}</tbody>
     </table>
 
-    <!-- Totals -->
     <div class="totals">
       <div class="total-row">
         <span>Subtotal (${order.items.reduce((s, i) => s + i.quantity, 0)} items)</span>
         <span>BDT ${subtotal.toLocaleString()}</span>
       </div>
-      ${showDeliveryLine ? `
-      <div class="total-row">
-        <span>Delivery (${isInsideDhaka ? "Inside Dhaka" : "Outside Dhaka"})</span>
-        <span>BDT ${deliveryCharge}</span>
-      </div>` : ""}
-      <div class="total-row grand">
+      ${showDeliveryLine && deliveryCharge > 0 ? `<div class="total-row"><span>Delivery</span><span>BDT ${deliveryCharge.toLocaleString()}</span></div>` : ""}
+      <div class="grand-total">
         <span>Grand Total</span>
         <span>BDT ${Number(order.total).toLocaleString()}</span>
       </div>
     </div>
 
-    <!-- Barcode-style order ref -->
-    <div style="margin-top:24px;text-align:center;">
-      <div style="display:inline-block;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:8px;padding:8px 24px;">
-        <div style="font-family:monospace;font-size:11px;color:#94a3b8;letter-spacing:0.15em;">ORDER REFERENCE</div>
-        <div style="font-family:monospace;font-size:16px;font-weight:800;color:#1e293b;letter-spacing:0.1em;">AG-${String(order.id).padStart(6, "0")}</div>
+    <div class="order-ref">
+      <div class="order-ref-box">
+        <div class="order-ref-label">Order Reference</div>
+        <div class="order-ref-code">${refCode}</div>
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
   <div class="footer">
     <p>Thank you for shopping with <strong>${siteName}</strong>! 🎉</p>
-    <p>For support: contact us via our website or social media.</p>
-    <p style="margin-top:6px;font-size:10px;opacity:0.5;">This is a computer-generated receipt and is valid without a signature.</p>
+    <p>For support, contact us via our website or social media.</p>
+    <p style="margin-top:6px;font-size:10px;opacity:0.4;">Computer-generated receipt · Valid without signature</p>
   </div>
 </div>
-
-<script>
-  // Auto-close the print dialog and refresh parent on close
-  window.onafterprint = function() {};
-</script>
 </body>
 </html>`;
 
-  const win = window.open("", "_blank", "width=760,height=900,scrollbars=yes");
+  const win = window.open("", "_blank", "width=760,height=920,scrollbars=yes");
   if (win) {
     win.document.write(html);
     win.document.close();
