@@ -152,6 +152,7 @@ router.post("/orders", async (req, res) => {
         customerName: body.customerName,
         customerPhone: body.customerPhone,
         customerAddress: fullAddress,
+        customerEmail: body.customerEmail?.trim() || null,
         items: orderItems,
         total: String(total),
         status: "pending",
@@ -273,6 +274,27 @@ router.patch("/orders/:id", async (req, res) => {
         req.log.info({ orderId: id, status, phone: order.customerPhone, sent }, "Order status SMS");
       } catch (smsErr) {
         req.log.warn({ smsErr }, "Order status SMS failed (non-fatal)");
+      }
+    }
+
+    // ── Send email notification on status change if customer email is stored ─
+    if (order.customerEmail) {
+      const STATUS_EMAIL: Record<string, string> = {
+        confirmed: "✅ Your Order is Confirmed!",
+        processing: "📦 Your Order is Being Processed",
+        shipped: "🚚 Your Order Has Been Shipped!",
+        delivered: "🎉 Your Order Has Been Delivered!",
+        cancelled: "❌ Your Order Has Been Cancelled",
+      };
+      const subject = STATUS_EMAIL[status];
+      if (subject) {
+        const orderTimestamp = new Date().toLocaleString("en-GB", { timeZone: "Asia/Dhaka" });
+        const firstItem = (order.items as Array<{ productName: string }>)[0];
+        sendOrderConfirmationEmail(order.customerEmail, order.customerName, {
+          productName: firstItem?.productName ?? "your order",
+          address: order.customerAddress ?? undefined,
+          timestamp: orderTimestamp,
+        }).catch((err) => req.log.warn({ err }, "Order status email failed (non-fatal)"));
       }
     }
 

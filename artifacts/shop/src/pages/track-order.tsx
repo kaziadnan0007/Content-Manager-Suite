@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StoreLayout } from "@/components/layout/store-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useTrackOrder, getTrackOrderQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSearch } from "wouter";
 import {
   PackageSearch, Package, CheckCircle2, Truck, Clock,
   XCircle, ShoppingBag, Phone, MapPin, CreditCard, AlertCircle,
@@ -67,10 +68,18 @@ const PAYMENT_LABELS: Record<string, string> = {
 };
 
 export function TrackOrderPage() {
-  const [orderIdInput, setOrderIdInput] = useState("");
+  const searchString = useSearch();
+  const urlParams = new URLSearchParams(searchString);
+  const urlOrderId = urlParams.get("orderId") ?? "";
+
+  const [orderIdInput, setOrderIdInput] = useState(urlOrderId);
   const [phoneInput, setPhoneInput] = useState("");
   const [queryParams, setQueryParams] = useState<{ orderId: number; phone: string } | null>(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (urlOrderId) setOrderIdInput(urlOrderId);
+  }, [urlOrderId]);
 
   const { data: order, isLoading, error } = useTrackOrder(
     queryParams ? { orderId: queryParams.orderId, phone: queryParams.phone } : { orderId: 0, phone: "" },

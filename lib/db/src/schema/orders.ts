@@ -7,6 +7,7 @@ export const ordersTable = pgTable("orders", {
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone").notNull(),
   customerAddress: text("customer_address"),
+  customerEmail: text("customer_email"),
   items: jsonb("items").notNull().$type<Array<{
     productId: number;
     productName: string;
