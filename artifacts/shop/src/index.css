@@ -307,4 +307,77 @@
     letter-spacing: -0.04em;
     line-height: 1;
   }
+
+  /* ── Marquee brand scroll ────────────────────────────────────────────── */
+  @keyframes marquee-left {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .marquee-track {
+    animation: marquee-left 32s linear infinite;
+    will-change: transform;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+
+  /* ── Category card hover glow ────────────────────────────────────────── */
+  .cat-card-glow {
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .cat-card-glow:hover {
+    box-shadow: 0 0 0 2px rgba(0,212,255,.45), 0 8px 28px rgba(0,0,0,.28);
+    transform: translateY(-3px) scale(1.04);
+  }
+
+  /* ── Fade-up section entry ───────────────────────────────────────────── */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fade-up .45s ease both; }
+
+  /* ── Floating action button ──────────────────────────────────────────── */
+  .fab-float {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    z-index: 55;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  /* ── Footer links ────────────────────────────────────────────────────── */
+  .footer-link {
+    font-size: 13px;
+    color: rgba(255,255,255,.55);
+    transition: color .15s ease;
+    display: block;
+    padding: 2px 0;
+    text-decoration: none;
+  }
+  .footer-link:hover { color: rgba(255,255,255,.95); }
+
+  /* ── Back to top ─────────────────────────────────────────────────────── */
+  @keyframes bounce-up { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+  .bounce-up:hover { animation: bounce-up .6s ease infinite; }
+
+  /* ── Product card shimmer on hover ───────────────────────────────────── */
+  .product-card-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .product-card-shine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(0,212,255,.08) 50%, transparent 60%);
+    background-size: 200% 100%;
+    opacity: 0;
+    transition: opacity .2s ease;
+  }
+  .product-card-shine:hover::after {
+    opacity: 1;
+    animation: shimmer-sweep 1.2s ease;
+  }
 }

@@ -430,92 +430,166 @@ export function StoreLayout({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      {/* Footer */}
-      <footer className="border-t bg-muted/20 mt-auto">
-        <div className="store-header-main">
-          <div className="container mx-auto px-4 grid grid-cols-2 md:grid-cols-4 divide-x divide-white/10">
-            {[
-              { icon: "🚚", t: "Inside Dhaka", s: "Delivery BDT 60" },
-              { icon: "📦", t: "Outside Dhaka", s: "Delivery BDT 120" },
-              { icon: "💳", t: "bKash / Rocket", s: "Secure payment" },
-              { icon: "🛡️", t: "100% Genuine", s: "Quality guaranteed" },
-            ].map((b) => (
-              <div key={b.t} className="flex items-center gap-3 py-3 px-4">
-                <span className="text-xl">{b.icon}</span>
-                <div>
-                  <p className="text-xs font-black text-white">{b.t}</p>
-                  <p className="text-[10px] text-white/60">{b.s}</p>
+      {/* ── FLOATING CONTACT BUTTON ──────────────────────────────────────── */}
+      {settings?.contactPhone && (
+        <div className="fab-float pointer-events-none">
+          <a
+            href={`https://wa.me/88${settings.contactPhone.replace(/\D/g, "")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Chat on WhatsApp"
+            className="pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center shadow-2xl text-white text-2xl transition-all hover:scale-110 bounce-up border-2 border-white/20"
+            style={{ background: "linear-gradient(135deg,#25D366,#128C7E)" }}
+          >
+            💬
+          </a>
+          <a
+            href={`tel:${settings.contactPhone}`}
+            title="Call us"
+            className="pointer-events-auto w-11 h-11 rounded-full flex items-center justify-center shadow-xl text-white text-lg transition-all hover:scale-110 border-2 border-white/20"
+            style={{ background: "linear-gradient(135deg,hsl(218 62% 20%),hsl(192 80% 28%))" }}
+          >
+            📞
+          </a>
+        </div>
+      )}
+
+      {/* ── FOOTER ──────────────────────────────────────────────────────── */}
+      <footer className="mt-auto" style={{ background: "hsl(218 65% 7%)" }}>
+
+        {/* Trust strip */}
+        <div style={{ background: "hsl(218 62% 11%)", borderTop: "1px solid rgba(255,255,255,.06)", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/8">
+              {[
+                { icon: "🚚", t: "Free Delivery", s: "Orders above BDT 500" },
+                { icon: "🔒", t: "Secure Checkout", s: "SSL encrypted & safe" },
+                { icon: "💳", t: "bKash • Nagad • COD", s: "Flexible payment" },
+                { icon: "🔄", t: "7-Day Returns", s: "Hassle-free policy" },
+              ].map((b) => (
+                <div key={b.t} className="flex items-center gap-3 py-3.5 px-4 hover:bg-white/3 transition-colors">
+                  <span className="text-xl flex-shrink-0">{b.icon}</span>
+                  <div>
+                    <p className="text-xs font-black text-white/90">{b.t}</p>
+                    <p className="text-[10px] text-white/45">{b.s}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="sm:col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-3">
-                <AcholGathaLogo size="md" />
+        {/* Main footer content */}
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+
+            {/* Brand column */}
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                <AcholGathaLogo size="sm" onDark />
                 <div className="flex flex-col leading-none">
-                  <span className="font-black text-base tracking-tight [background:linear-gradient(135deg,hsl(192_100%_38%),hsl(217_91%_58%))] bg-clip-text text-transparent">
-                    AcholGatha
-                  </span>
-                  <span className="text-[9px] font-bold tracking-widest uppercase text-muted-foreground mt-0.5">
-                    Bangladesh #1 Shop
-                  </span>
+                  <span className="font-black text-base tracking-tight text-white">AcholGatha</span>
+                  <span className="text-[9px] font-bold tracking-widest uppercase text-white/40 mt-0.5">Bangladesh #1 Shop</span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {settings?.tagline || "Bangladesh's #1 online shopping platform."}
+              <p className="text-sm text-white/50 leading-relaxed mb-5">
+                {settings?.tagline || "Bangladesh's most trusted online shopping destination. Fast delivery. Genuine products. Real support."}
               </p>
-              <div className="flex gap-3 mt-4 flex-wrap">
-                {settings?.facebookUrl && (
+              {/* Social links */}
+              <div className="flex gap-2">
+                {settings?.facebookUrl ? (
                   <a href={settings.facebookUrl} target="_blank" rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors text-sm font-bold">f</a>
+                    className="w-9 h-9 rounded-xl flex items-center justify-center text-white/50 hover:text-white transition-all text-sm font-black border border-white/10 hover:border-primary/50 hover:bg-primary/10"
+                    title="Facebook">
+                    f
+                  </a>
+                ) : null}
+                {settings?.contactPhone && (
+                  <a href={`https://wa.me/88${settings.contactPhone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center text-white/50 hover:text-white transition-all text-sm border border-white/10 hover:border-green-500/50 hover:bg-green-500/10"
+                    title="WhatsApp">
+                    💬
+                  </a>
                 )}
               </div>
+              {settings?.contactPhone && (
+                <div className="mt-4 flex items-center gap-2 text-sm">
+                  <Phone className="w-3.5 h-3.5 text-primary" />
+                  <a href={`tel:${settings.contactPhone}`} className="text-white/60 hover:text-white transition-colors font-medium">
+                    {settings.contactPhone}
+                  </a>
+                </div>
+              )}
             </div>
 
+            {/* Shop links */}
             <div>
-              <h4 className="font-black text-sm mb-3 uppercase tracking-wider">Shop</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/products" className="hover:text-primary transition-colors">All Products</Link></li>
+              <h4 className="text-xs font-black uppercase tracking-widest text-white/35 mb-4">Shop</h4>
+              <ul className="space-y-2">
+                <li><Link href="/products" className="footer-link">All Products</Link></li>
+                <li><Link href="/products?featured=true" className="footer-link">Flash Deals</Link></li>
                 {categories?.slice(0, 5).map(cat => (
-                  <li key={cat.id}><Link href={`/products?category=${cat.id}`} className="hover:text-primary transition-colors">{cat.name}</Link></li>
+                  <li key={cat.id}>
+                    <Link href={`/products?category=${cat.id}`} className="footer-link">{cat.name}</Link>
+                  </li>
                 ))}
               </ul>
             </div>
 
+            {/* Customer service */}
             <div>
-              <h4 className="font-black text-sm mb-3 uppercase tracking-wider">Account</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/auth/signin" className="hover:text-primary transition-colors">Sign In</Link></li>
-                <li><Link href="/auth/signup" className="hover:text-primary transition-colors">Create Account</Link></li>
-                <li><Link href="/profile" className="hover:text-primary transition-colors">My Profile</Link></li>
-                <li><Link href="/track-order" className="hover:text-primary transition-colors">Track Order</Link></li>
-                <li><Link href="/wishlist" className="hover:text-primary transition-colors">Wishlist</Link></li>
+              <h4 className="text-xs font-black uppercase tracking-widest text-white/35 mb-4">Customer Service</h4>
+              <ul className="space-y-2">
+                <li><Link href="/track-order" className="footer-link">Track My Order</Link></li>
+                <li><Link href="/profile" className="footer-link">My Orders</Link></li>
+                <li><Link href="/wishlist" className="footer-link">My Wishlist</Link></li>
+                <li><a href="#" className="footer-link">Return Policy</a></li>
+                <li><a href="#" className="footer-link">Shipping Info</a></li>
+                <li><a href="#" className="footer-link">FAQ</a></li>
               </ul>
             </div>
 
+            {/* Account + payments */}
             <div>
-              <h4 className="font-black text-sm mb-3 uppercase tracking-wider">Help</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                {settings?.contactPhone && (
-                  <li className="flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5" />
-                    <a href={`tel:${settings.contactPhone}`} className="hover:text-primary transition-colors">{settings.contactPhone}</a>
-                  </li>
-                )}
-                <li>Delivery 3–5 working days</li>
-                <li>7-day easy returns</li>
-                <li>100% genuine products</li>
+              <h4 className="text-xs font-black uppercase tracking-widest text-white/35 mb-4">My Account</h4>
+              <ul className="space-y-2 mb-6">
+                <li><Link href="/auth/signin" className="footer-link">Sign In</Link></li>
+                <li><Link href="/auth/signup" className="footer-link">Create Account</Link></li>
+                <li><Link href="/profile" className="footer-link">Profile Settings</Link></li>
+                <li><Link href="/checkout" className="footer-link">Checkout</Link></li>
               </ul>
+              <h4 className="text-xs font-black uppercase tracking-widest text-white/35 mb-3">We Accept</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { l: "bKash", c: "#E2136E" },
+                  { l: "Nagad", c: "#F7941D" },
+                  { l: "Rocket", c: "#8B2FC9" },
+                  { l: "COD", c: "#16a34a" },
+                  { l: "VISA", c: "#1A1F71" },
+                ].map((p) => (
+                  <span key={p.l}
+                    className="text-[10px] font-black px-2 py-1 rounded-lg border"
+                    style={{ color: p.c, borderColor: p.c + "40", background: p.c + "15" }}>
+                    {p.l}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="border-t mt-8 pt-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-muted-foreground">
-            <span>© {new Date().getFullYear()} AcholGatha. All rights reserved.</span>
-            <span>Made with ❤️ in Bangladesh</span>
+          {/* Divider + copyright */}
+          <div className="mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3"
+            style={{ borderTop: "1px solid rgba(255,255,255,.07)" }}>
+            <p className="text-xs text-white/30 text-center sm:text-left">
+              © {new Date().getFullYear()} AcholGatha — Bangladesh's #1 Online Shop. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4 text-xs text-white/25">
+              <a href="#" className="hover:text-white/60 transition-colors">Privacy Policy</a>
+              <span>·</span>
+              <a href="#" className="hover:text-white/60 transition-colors">Terms of Service</a>
+              <span>·</span>
+              <span>🇧🇩 Made in Bangladesh</span>
+            </div>
           </div>
         </div>
       </footer>
