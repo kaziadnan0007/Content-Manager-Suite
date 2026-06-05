@@ -6,6 +6,8 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductCard } from "@/components/product-card";
+import { RecentlyViewedRow } from "@/components/recently-viewed-row";
+import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
 import { useEffect, useRef, useState } from "react";
 import {
   ChevronRight, ChevronLeft, TrendingUp,
@@ -313,6 +315,8 @@ export function Home() {
     const timer = setInterval(() => emblaApi.scrollNext(), 4500);
     return () => clearInterval(timer);
   }, [emblaApi]);
+
+  const { recentIds } = useRecentlyViewed();
 
   const featuredProducts = featuredData?.products || [];
   const latestProducts = latestData?.products || [];
@@ -726,6 +730,13 @@ export function Home() {
 
       {/* ── NEWSLETTER CTA ────────────────────────────────────────────────── */}
       <NewsletterCTA />
+
+      {/* ── RECENTLY VIEWED ───────────────────────────────────────────────── */}
+      {recentIds.length > 0 && (
+        <section className="container mx-auto px-4 py-6">
+          <RecentlyViewedRow recentIds={recentIds} />
+        </section>
+      )}
 
       {/* ── WHY SHOP — DETAILED ───────────────────────────────────────────── */}
       <section className="py-10 container mx-auto px-4">

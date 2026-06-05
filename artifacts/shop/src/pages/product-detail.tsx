@@ -9,7 +9,7 @@ import { ProductCard } from "@/components/product-card";
 import { RecentlyViewedRow } from "@/components/recently-viewed-row";
 import { useRecentlyViewed } from "@/hooks/use-recently-viewed";
 import { useAuthGate } from "@/components/auth-gate";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Minus,
   Plus,
@@ -23,6 +23,8 @@ import {
   Share2,
   CheckCircle2,
   Package,
+  ThumbsUp,
+  MessageSquare,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -31,6 +33,116 @@ function fakeRating(id: number) {
 }
 function fakeReviews(id: number) {
   return 12 + (id * 17) % 240;
+}
+
+const FAKE_REVIEWERS = [
+  { name: "Md. Rafiqul Islam", city: "Dhaka", avatar: "RI", color: "bg-blue-500" },
+  { name: "Fatema Akter", city: "Chattogram", avatar: "FA", color: "bg-pink-500" },
+  { name: "Karim Hossain", city: "Sylhet", avatar: "KH", color: "bg-green-500" },
+  { name: "Nasrin Sultana", city: "Rajshahi", avatar: "NS", color: "bg-purple-500" },
+  { name: "Tanvir Ahmed", city: "Khulna", avatar: "TA", color: "bg-orange-500" },
+  { name: "Ritu Begum", city: "Barishal", avatar: "RB", color: "bg-rose-500" },
+];
+
+const REVIEW_TEXTS = [
+  "Excellent product! Delivery was fast and packaging was great. Highly recommended.",
+  "Good quality, matches the description. Will definitely buy again from AcholGatha.",
+  "Very satisfied with the purchase. Customer service was helpful when I had a question.",
+  "Product is exactly as shown. Reasonable price and quick delivery to my area.",
+  "Bought as a gift and the recipient loved it! Great quality for the price.",
+  "Smooth ordering process. Product arrived on time and in perfect condition.",
+];
+
+function FakeReviewsSection({ productId, rating, reviewCount }: { productId: number; rating: number; reviewCount: number }) {
+  const dist = [
+    { stars: 5, pct: 58 + (productId % 12) },
+    { stars: 4, pct: 22 + (productId % 8) },
+    { stars: 3, pct: 10 - (productId % 4) },
+    { stars: 2, pct: 5 - (productId % 3) },
+    { stars: 1, pct: 5 - (productId % 2) },
+  ];
+
+  const reviews = FAKE_REVIEWERS.map((r, i) => ({
+    ...r,
+    stars: i < 3 ? 5 : i < 5 ? 4 : 3,
+    text: REVIEW_TEXTS[(productId + i) % REVIEW_TEXTS.length],
+    daysAgo: [2, 5, 8, 14, 21, 30][(productId + i) % 6],
+    helpful: [12, 8, 23, 6, 15, 4][(productId + i) % 6],
+  })).slice(0, 4 + (productId % 3));
+
+  return (
+    <div className="mt-16">
+      <div className="flex items-center gap-2.5 mb-8">
+        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          <MessageSquare className="w-4 h-4 text-primary" />
+        </div>
+        <div>
+          <h2 className="text-xl font-extrabold leading-tight">Customer Reviews</h2>
+          <p className="text-xs text-muted-foreground">{reviewCount} verified purchases</p>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-[280px_1fr] gap-8">
+        {/* Rating summary */}
+        <div className="bg-card border rounded-2xl p-6 flex flex-col items-center text-center self-start">
+          <div className="text-6xl font-black text-primary mb-1">{rating.toFixed(1)}</div>
+          <div className="flex items-center gap-0.5 mb-1">
+            {[1,2,3,4,5].map(s => (
+              <Star key={s} className={`w-4 h-4 ${s <= Math.floor(rating) ? "fill-yellow-400 text-yellow-400" : "fill-muted text-muted"}`} />
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mb-5">Based on {reviewCount} reviews</p>
+          <div className="w-full space-y-2">
+            {dist.map(({ stars, pct }) => (
+              <div key={stars} className="flex items-center gap-2 text-xs">
+                <span className="w-3 text-right font-medium">{stars}</span>
+                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-yellow-400 rounded-full transition-all" style={{ width: `${Math.min(pct, 100)}%` }} />
+                </div>
+                <span className="w-6 text-muted-foreground">{Math.min(pct, 99)}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Individual reviews */}
+        <div className="space-y-4">
+          {reviews.map((rev, i) => (
+            <div key={i} className="border rounded-xl p-5 bg-card hover:shadow-sm transition-shadow">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-full ${rev.color} flex items-center justify-center text-white text-xs font-black flex-shrink-0`}>
+                    {rev.avatar}
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm">{rev.name}</p>
+                    <p className="text-xs text-muted-foreground">📍 {rev.city} · {rev.daysAgo} days ago</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-0.5 flex-shrink-0">
+                  {[1,2,3,4,5].map(s => (
+                    <Star key={s} className={`w-3.5 h-3.5 ${s <= rev.stars ? "fill-yellow-400 text-yellow-400" : "fill-muted text-muted"}`} />
+                  ))}
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">{rev.text}</p>
+              <div className="flex items-center gap-1 mt-3">
+                <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
+                  <ThumbsUp className="w-3.5 h-3.5" />
+                  Helpful ({rev.helpful})
+                </button>
+                <span className="text-muted-foreground/40 mx-1">·</span>
+                <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                  ✓ Verified Purchase
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function ProductDetailPage() {
@@ -49,7 +161,27 @@ export function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [stickyVisible, setStickyVisible] = useState(false);
   const { recentIds } = useRecentlyViewed(id);
+
+  const [viewingNow, setViewingNow] = useState(() => 8 + (id % 23));
+  useEffect(() => {
+    const t = setInterval(() => {
+      setViewingNow((v) => Math.max(4, v + (Math.random() > 0.5 ? 1 : -1)));
+    }, 7000);
+    return () => clearInterval(t);
+  }, [id]);
+
+  useEffect(() => {
+    const sentinel = document.getElementById("buy-buttons-sentinel");
+    if (!sentinel) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setStickyVisible(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    obs.observe(sentinel);
+    return () => obs.disconnect();
+  }, [product]);
 
   const handleAddToCart = () => {
     requireAuth(() => {
@@ -235,7 +367,7 @@ export function ProductDetailPage() {
               {product.name}
             </h1>
 
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
               <div className="flex items-center gap-0.5">
                 {[1, 2, 3, 4, 5].map((s) => (
                   <Star
@@ -250,6 +382,20 @@ export function ProductDetailPage() {
               </div>
               <span className="text-sm font-medium">{rating.toFixed(1)}</span>
               <span className="text-sm text-muted-foreground">({reviewCount} reviews)</span>
+            </div>
+
+            {/* Viewing now social proof */}
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/40 text-orange-700 dark:text-orange-400 text-xs font-bold px-2.5 py-1.5 rounded-full">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
+                </span>
+                {viewingNow} people viewing now
+              </div>
+              <div className="text-xs text-muted-foreground">
+                🔥 {50 + (product.id * 43) % 950}+ sold this week
+              </div>
             </div>
 
             <div className="flex items-baseline gap-3 mb-4">
@@ -278,7 +424,12 @@ export function ProductDetailPage() {
                   <CheckCircle2 className="w-4 h-4" /> Only {product.stock} left — order soon!
                 </span>
               ) : (
-                <span className="text-sm text-destructive font-medium">✗ Out of Stock</span>
+                <div className="space-y-2">
+                  <span className="text-sm text-destructive font-medium flex items-center gap-1.5">
+                    <Package className="w-4 h-4" /> Currently Out of Stock
+                  </span>
+                  <NotifyStockForm productName={product.name} />
+                </div>
               )}
             </div>
 
@@ -333,6 +484,8 @@ export function ProductDetailPage() {
                     <Zap className="w-5 h-5" /> Buy Now
                   </Button>
                 </div>
+                {/* Sentinel for sticky bar */}
+                <div id="buy-buttons-sentinel" className="h-px" />
               </div>
             )}
 
@@ -389,8 +542,47 @@ export function ProductDetailPage() {
           </div>
         )}
 
+        <FakeReviewsSection productId={product.id} rating={rating} reviewCount={reviewCount} />
+
         <RecentlyViewedRow recentIds={recentIds} />
       </div>
+
+      {/* ── Sticky Add to Cart Bar ──────────────────────────────────────── */}
+      {product.stock > 0 && (
+        <div className={`fixed bottom-0 left-0 right-0 z-40 transition-all duration-300 ${
+          stickyVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
+        }`}>
+          <div className="bg-card/95 backdrop-blur-md border-t shadow-2xl">
+            <div className="container mx-auto px-4 py-3 flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm truncate">{product.name}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-black text-primary">BDT {(product.price * quantity).toLocaleString()}</span>
+                  {product.comparePrice && product.comparePrice > product.price && (
+                    <span className="text-xs text-muted-foreground line-through">BDT {(product.comparePrice * quantity).toLocaleString()}</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center border rounded-lg overflow-hidden flex-shrink-0">
+                <button className="px-2.5 py-1.5 hover:bg-muted transition-colors" onClick={() => setQuantity(q => Math.max(1, q - 1))} disabled={quantity <= 1}>
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="w-8 text-center text-sm font-bold">{quantity}</span>
+                <button className="px-2.5 py-1.5 hover:bg-muted transition-colors" onClick={() => setQuantity(q => Math.min(product.stock, q + 1))} disabled={quantity >= product.stock}>
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <Button size="sm" variant="outline" className="h-10 gap-1.5 font-bold flex-shrink-0" onClick={handleAddToCart}>
+                <ShoppingCart className="w-4 h-4" />
+                {addedToCart ? "Added!" : "Add to Cart"}
+              </Button>
+              <Button size="sm" className="h-10 gap-1.5 font-bold neon-glow flex-shrink-0" onClick={handleBuyNow}>
+                <Zap className="w-4 h-4" /> Buy Now
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </StoreLayout>
   );
 }
