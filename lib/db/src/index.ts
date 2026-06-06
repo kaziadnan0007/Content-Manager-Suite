@@ -4,14 +4,12 @@ import * as schema from "./schema";
 
 const { Pool } = pg;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
-
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+const pool = new Pool({
+  host: process.env.PGHOST ?? "helium",
+  port: Number(process.env.PGPORT ?? 5432),
+  user: process.env.PGUSER ?? "postgres",
+  password: process.env.PGPASSWORD,
+  database: process.env.PGDATABASE ?? "heliumdb",
   max: 20,
   min: 2,
   idleTimeoutMillis: 30000,
@@ -23,6 +21,7 @@ pool.on("error", (err) => {
   console.error("[DB] Unexpected pool error", err);
 });
 
+export { pool };
 export const db = drizzle(pool, { schema });
 
 export * from "./schema";
