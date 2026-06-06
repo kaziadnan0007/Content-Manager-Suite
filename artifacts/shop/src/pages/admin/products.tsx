@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useState, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Trash2, Edit, Plus, Image as ImageIcon, Upload, Download, CheckCircle2, AlertCircle, FileSpreadsheet } from "lucide-react";
+import { Trash2, Edit, Plus, Image as ImageIcon, Upload, Download, CheckCircle2, AlertCircle, FileSpreadsheet, FileDown } from "lucide-react";
 import * as XLSX from "xlsx";
 
 interface ImportResult {
@@ -361,6 +361,19 @@ export function AdminProducts() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Products</h1>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => {
+              const a = document.createElement("a");
+              a.href = "/api/products/export";
+              a.download = "products-export.csv";
+              a.click();
+            }}
+          >
+            <FileDown className="w-4 h-4" />
+            Export CSV
+          </Button>
           <CsvImportDialog onDone={() => queryClient.invalidateQueries({ queryKey: getListProductsQueryKey() })} />
           <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if(!open) resetForm(); }}>
             <DialogTrigger asChild>
