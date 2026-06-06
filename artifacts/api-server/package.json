@@ -19,6 +19,7 @@
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "csv-parse": "^6.2.1",
     "drizzle-orm": "catalog:",
     "express": "^5.2.1",
     "express-session": "^1.19.0",

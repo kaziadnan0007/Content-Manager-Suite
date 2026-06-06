@@ -1,0 +1,140 @@
+Fix all frontend and backend issues 
+and redesign the entire website to 
+international enterprise grade level.
+
+=== DESIGN REQUIREMENTS ===
+
+Color Scheme:
+- Primary: Deep Navy #0A0E1A
+- Secondary: Electric Blue #2563EB  
+- Accent: Cyan Gradient #06B6D4
+- Gold Accent: #F59E0B
+- Background: #0F172A
+- Card BG: #1E293B
+- Text: #F8FAFC
+- Subtext: #94A3B8
+
+Typography:
+- Use Google Fonts: Inter + Poppins
+- Bold headings with gradient text
+- Clean readable body text
+
+Visual Effects:
+- Glassmorphism cards
+- Smooth gradient backgrounds
+- Subtle animations on hover
+- Glowing buttons
+- Modern shadows and depth
+
+=== FIX ALL BUGS ===
+
+1. Fix navbar overlap/duplicate text
+2. Fix all layout breaking issues
+3. Fix mobile responsiveness 
+4. Fix all API connection errors
+5. Fix product loading issues
+6. Fix image loading issues
+7. Fix all console errors
+
+=== SHOP FRONTEND ===
+
+Hero Section:
+- Full screen hero with gradient
+- Animated headline
+- Two CTA buttons: 
+  "Shop Now" and "View Deals"
+- Floating product images
+
+Navbar:
+- Sticky transparent navbar
+- Logo left side
+- Navigation center
+- Cart + Profile right side
+- Mobile hamburger menu
+- Smooth scroll behavior
+
+Product Cards:
+- Modern glassmorphism design
+- Product image top
+- Name, price, rating below
+- "Add to Cart" + "Buy Now" buttons
+- Hover animation with glow effect
+- Badge for Flash Deals/New/Hot
+
+Categories Section:
+- Icon based category cards
+- Gradient backgrounds
+- Smooth hover effects
+
+Flash Deals Section:
+- Countdown timer
+- Hot deal badges
+- Limited stock indicator
+
+Footer:
+- Clean 4 column layout
+- Social media links
+- Newsletter signup
+- Payment method icons
+
+=== ADMIN PANEL ===
+
+Design:
+- Dark sidebar navigation
+- Company logo top of sidebar
+- Gradient accent colors
+- Clean data tables
+- Modern stat cards with icons
+
+Dashboard Stats Cards:
+- Total Orders (with icon)
+- Total Revenue (with icon)
+- Total Customers (with icon)
+- Total Products (with icon)
+- All with gradient backgrounds
+
+Features:
+- Orders management table
+  (view, update status, delete)
+- Products management
+  (add, edit, delete, image upload)
+- Customers list
+  (view, block, delete)
+- Analytics charts
+- Settings page
+
+Order Status Update:
+When admin updates order status,
+automatically send Gmail notification
+to customer:
+"Your order status has been updated to: 
+{status}"
+
+=== PERFORMANCE ===
+- Lazy load images
+- Optimize all API calls
+- Add loading skeletons
+- Error boundaries
+- Empty state designs
+
+=== DATABASE FIX ===
+- Fix all database connection issues
+- Make sure products load properly
+- Fix all CRUD operations
+- Add proper error handling
+
+=== MOBILE RESPONSIVE ===
+- Perfect on all screen sizes
+- Touch friendly buttons
+- Mobile optimized navigation
+- Fast loading on mobile
+
+=== RULES ===
+- DO NOT remove existing features
+- Keep all existing routes
+- TypeScript only
+- Fix all existing bugs first
+- Then add new design
+- Show modified files only
+- Use Tailwind CSS for styling
+- Keep all environment variables
