@@ -225,26 +225,67 @@ router.post("/customers/logout", async (req, res) => {
 
 /* ─── Admin: list all customers ─────────────────────────────────────────── */
 router.get("/admin/customers", async (req, res) => {
-  if (!req.session?.adminId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  if (!req.session?.adminId) return res.status(401).json({ error: "Unauthorized" });
   try {
     const all = await db
-      .select({
-        id: customers.id,
-        name: customers.name,
-        phone: customers.phone,
-        email: customers.email,
-        isVerified: customers.isVerified,
-        createdAt: customers.createdAt,
-      })
+      .select({ id: customers.id, name: customers.name, phone: customers.phone, email: customers.email, isVerified: customers.isVerified, createdAt: customers.createdAt })
       .from(customers)
       .orderBy(desc(customers.createdAt))
       .limit(500);
-
     res.json({ customers: all, total: all.length });
   } catch {
     res.status(500).json({ error: "Failed to fetch customers" });
+  }
+});
+
+/* ─── Admin: create customer ─────────────────────────────────────────────── */
+router.post("/admin/customers", async (req, res) => {
+  if (!req.session?.adminId) return res.status(401).json({ error: "Unauthorized" });
+  const { name, phone, email, password } = req.body;
+  if (!name || !phone) return res.status(400).json({ error: "Name and phone are required" });
+  try {
+    const existing = await db.select().from(customers).where(eq(customers.phone, phone)).limit(1);
+    if (existing.length > 0) return res.status(409).json({ error: "Phone number already registered" });
+    const hash = password ? await hashPassword(password) : await hashPassword("123456");
+    const token = generateToken();
+    const [customer] = await db.insert(customers)
+      .values({ name, phone, email: email || null, passwordHash: hash, isVerified: true, sessionToken: token })
+      .returning();
+    res.json({ success: true, customer });
+  } catch {
+    res.status(500).json({ error: "Failed to create customer" });
+  }
+});
+
+/* ─── Admin: delete customer ─────────────────────────────────────────────── */
+router.delete("/admin/customers/:id", async (req, res) => {
+  if (!req.session?.adminId) return res.status(401).json({ error: "Unauthorized" });
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+  try {
+    const deleted = await db.delete(customers).where(eq(customers.id, id)).returning();
+    if (!deleted.length) return res.status(404).json({ error: "Customer not found" });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: "Failed to delete customer" });
+  }
+});
+
+/* ─── Admin: update customer ─────────────────────────────────────────────── */
+router.put("/admin/customers/:id", async (req, res) => {
+  if (!req.session?.adminId) return res.status(401).json({ error: "Unauthorized" });
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+  const { name, email, isVerified } = req.body;
+  try {
+    const [customer] = await db.update(customers)
+      .set({ name, email: email || null, isVerified: !!isVerified })
+      .where(eq(customers.id, id))
+      .returning();
+    if (!customer) return res.status(404).json({ error: "Customer not found" });
+    res.json({ success: true, customer });
+  } catch {
+    res.status(500).json({ error: "Failed to update customer" });
   }
 });
 

@@ -29,7 +29,7 @@ function StatCard({
     <div
       className="relative overflow-hidden rounded-2xl p-5 cursor-pointer transition-all duration-300 border"
       style={{
-        background: "rgba(30,41,59,0.60)",
+        background: "rgba(51,65,85,0.85)",
         borderColor: "rgba(255,255,255,.07)",
         backdropFilter: "blur(8px)",
       }}
@@ -225,7 +225,7 @@ export function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Recent orders */}
           <div className="rounded-2xl border overflow-hidden"
-            style={{ background: "rgba(30,41,59,.60)", borderColor: "rgba(255,255,255,.07)", backdropFilter: "blur(8px)" }}>
+            style={{ background: "rgba(51,65,85,.85)", borderColor: "rgba(255,255,255,.12)", backdropFilter: "blur(8px)" }}>
             <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "rgba(255,255,255,.06)" }}>
               <span className="font-bold text-white text-sm">Recent Orders</span>
               <Link href="/admin/orders" className="text-xs text-blue-400 hover:text-blue-300 font-bold hover:underline flex items-center gap-1">
@@ -283,7 +283,7 @@ export function AdminDashboard() {
 
           {/* Revenue by payment */}
           <div className="rounded-2xl border overflow-hidden"
-            style={{ background: "rgba(30,41,59,.60)", borderColor: "rgba(255,255,255,.07)", backdropFilter: "blur(8px)" }}>
+            style={{ background: "rgba(51,65,85,.85)", borderColor: "rgba(255,255,255,.12)", backdropFilter: "blur(8px)" }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: "rgba(255,255,255,.06)" }}>
               <span className="font-bold text-white text-sm">Revenue by Payment Method</span>
             </div>

@@ -259,9 +259,8 @@ export function ProductCard({ product }: { product: Product }) {
         <div
           className="group relative rounded-2xl overflow-hidden cursor-pointer h-full flex flex-col product-card-shine transition-all duration-300"
           style={{
-            background: "rgba(30,41,59,0.80)",
-            border: "1px solid rgba(255,255,255,.07)",
-            backdropFilter: "blur(8px)",
+            background: "#1e3a5f",
+            border: "1px solid rgba(100,160,255,.25)",
           }}
           onMouseEnter={e => {
             const el = e.currentTarget as HTMLElement;
