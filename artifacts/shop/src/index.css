@@ -63,8 +63,8 @@
   --elevate-1: rgba(0,0,0,.03);
   --elevate-2: rgba(0,0,0,.08);
 
-  /* Electric Cyan / Neon Blue — #00D4FF = HSL 192 100% 50% */
-  --primary: 192 100% 38%;
+  /* Electric Blue #2563EB = HSL 221 83% 53% */
+  --primary: 221 83% 53%;
   --primary-foreground: 0 0% 100%;
 
   --background: 210 20% 98%;
@@ -92,16 +92,16 @@
 
   --border: 210 20% 88%;
   --input: 210 20% 88%;
-  --ring: 192 100% 38%;
+  --ring: 221 83% 53%;
 
   --sidebar: 0 0% 100%;
   --sidebar-foreground: 218 40% 10%;
   --sidebar-border: 210 20% 90%;
-  --sidebar-primary: 192 100% 38%;
+  --sidebar-primary: 221 83% 53%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 210 30% 94%;
   --sidebar-accent-foreground: 218 40% 10%;
-  --sidebar-ring: 192 100% 38%;
+  --sidebar-ring: 221 83% 53%;
 
   --chart-1: 192 100% 42%;
   --chart-2: 217 91% 58%;
@@ -109,7 +109,7 @@
   --chart-4: 280 85% 58%;
   --chart-5: 27 96% 55%;
 
-  --app-font-sans: 'Inter', 'Noto Sans Bengali', sans-serif;
+  --app-font-sans: 'Poppins', 'Inter', 'Noto Sans Bengali', sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
   --radius: 0.625rem;
@@ -142,44 +142,44 @@
   --elevate-1: rgba(255,255,255,.04);
   --elevate-2: rgba(255,255,255,.09);
 
-  --background: 218 48% 5%;
-  --foreground: 210 28% 95%;
+  /* Background: #0F172A */ --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
 
-  --card: 218 42% 8%;
-  --card-foreground: 210 28% 95%;
-  --card-border: 218 30% 14%;
+  /* Card: #1E293B */ --card: 217 33% 17%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 217 28% 23%;
 
-  --popover: 218 42% 8%;
-  --popover-foreground: 210 28% 95%;
-  --popover-border: 218 30% 14%;
+  --popover: 217 33% 17%;
+  --popover-foreground: 210 40% 98%;
+  --popover-border: 217 28% 23%;
 
-  --primary: 192 100% 50%;
-  --primary-foreground: 218 60% 6%;
+  /* Electric Blue #2563EB */ --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 218 28% 13%;
-  --secondary-foreground: 210 28% 95%;
+  --secondary: 217 28% 22%;
+  --secondary-foreground: 210 40% 98%;
 
-  --muted: 218 28% 13%;
-  --muted-foreground: 215 14% 58%;
+  --muted: 217 28% 22%;
+  --muted-foreground: 215 20% 65%;
 
-  --accent: 218 28% 13%;
-  --accent-foreground: 210 28% 95%;
+  --accent: 189 95% 43%;
+  --accent-foreground: 0 0% 100%;
 
   --destructive: 4 72% 50%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 218 28% 15%;
-  --input: 218 28% 15%;
-  --ring: 192 100% 50%;
+  --border: 217 28% 24%;
+  --input: 217 28% 24%;
+  --ring: 221 83% 53%;
 
-  --sidebar: 218 42% 7%;
-  --sidebar-foreground: 210 28% 95%;
-  --sidebar-border: 218 30% 14%;
-  --sidebar-primary: 192 100% 50%;
-  --sidebar-primary-foreground: 218 60% 6%;
-  --sidebar-accent: 218 28% 13%;
-  --sidebar-accent-foreground: 210 28% 95%;
-  --sidebar-ring: 192 100% 50%;
+  /* Deep Navy sidebar: #0A0E1A */ --sidebar: 228 39% 7%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-border: 228 30% 13%;
+  --sidebar-primary: 221 83% 53%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 217 28% 14%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-ring: 221 83% 53%;
 
   --chart-1: 192 100% 50%;
   --chart-2: 217 91% 62%;
@@ -220,23 +220,34 @@
     border-top: 1px solid rgba(255,255,255,.06);
   }
 
-  /* ── Flash sale — orange-red gradient ────────────────────────────────── */
+  /* ── Flash sale — electric gradient ─────────────────────────────────── */
   .flash-sale-bg {
-    background: linear-gradient(135deg, #e63c00 0%, #ff6500 50%, #ff9500 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #06b6d4 100%);
   }
 
-  /* ── Hero: deep navy → electric cyan ────────────────────────────────── */
+  /* ── Hero: deep navy → electric blue ────────────────────────────────── */
   .hero-gradient {
-    background: linear-gradient(135deg, hsl(218 65% 8%) 0%, hsl(218 60% 15%) 45%, hsl(192 80% 22%) 100%);
+    background: linear-gradient(135deg, #0a0e1a 0%, #0f172a 45%, #1e3a8a 100%);
   }
 
-  /* ── Neon glow — cyan ────────────────────────────────────────────────── */
+  /* ── Neon glow — electric blue ───────────────────────────────────────── */
   .neon-glow {
-    box-shadow: 0 0 20px hsla(192,100%,50%,.35), 0 4px 16px rgba(0,0,0,.20);
+    box-shadow: 0 0 20px hsla(221,83%,53%,.40), 0 4px 16px rgba(0,0,0,.30);
   }
   .neon-glow:hover {
-    box-shadow: 0 0 32px hsla(192,100%,50%,.55), 0 6px 24px rgba(0,0,0,.25);
-    transform: translateY(-1px);
+    box-shadow: 0 0 36px hsla(221,83%,53%,.65), 0 8px 28px rgba(0,0,0,.35);
+    transform: translateY(-2px);
+  }
+
+  /* ── Glassmorphism card ──────────────────────────────────────────────── */
+  .glass-card {
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  .glass-card:hover {
+    background: rgba(255,255,255,.08);
+    border-color: rgba(37,99,235,.40);
   }
 
   /* ── Card hover ──────────────────────────────────────────────────────── */
@@ -244,11 +255,11 @@
     transition: transform .18s ease, box-shadow .18s ease;
   }
   .card-hover:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 32px rgba(0,180,220,.12), 0 2px 8px rgba(0,0,0,.08);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(37,99,235,.15), 0 4px 12px rgba(0,0,0,.20);
   }
   .card-glow:hover {
-    box-shadow: 0 0 0 2px hsl(192 100% 50% / .30), 0 8px 28px rgba(0,212,255,.10);
+    box-shadow: 0 0 0 2px hsl(221 83% 53% / .35), 0 8px 28px rgba(37,99,235,.18);
   }
 
   /* ── Announcement — deep navy ────────────────────────────────────────── */
@@ -291,7 +302,7 @@
   /* ── Shimmer card overlay ────────────────────────────────────────────── */
   @keyframes shimmer-sweep { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
   .shimmer-card {
-    background: linear-gradient(90deg, transparent 0%, rgba(0,212,255,.06) 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(37,99,235,.07) 50%, transparent 100%);
     background-size: 200% 100%;
     animation: shimmer-sweep 2.8s infinite;
   }
@@ -321,11 +332,11 @@
 
   /* ── Category card hover glow ────────────────────────────────────────── */
   .cat-card-glow {
-    transition: transform .18s ease, box-shadow .18s ease;
+    transition: transform .20s ease, box-shadow .20s ease;
   }
   .cat-card-glow:hover {
-    box-shadow: 0 0 0 2px rgba(0,212,255,.45), 0 8px 28px rgba(0,0,0,.28);
-    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 0 0 2px rgba(37,99,235,.50), 0 10px 32px rgba(0,0,0,.35);
+    transform: translateY(-4px) scale(1.05);
   }
 
   /* ── Fade-up section entry ───────────────────────────────────────────── */
@@ -371,7 +382,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(105deg, transparent 40%, rgba(0,212,255,.08) 50%, transparent 60%);
+    background: linear-gradient(105deg, transparent 40%, rgba(37,99,235,.10) 50%, transparent 60%);
     background-size: 200% 100%;
     opacity: 0;
     transition: opacity .2s ease;
@@ -379,5 +390,31 @@
   .product-card-shine:hover::after {
     opacity: 1;
     animation: shimmer-sweep 1.2s ease;
+  }
+
+  /* ── Gradient text ───────────────────────────────────────────────────── */
+  .gradient-text {
+    background: linear-gradient(135deg, #2563eb, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-text-gold {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Glow text ───────────────────────────────────────────────────────── */
+  .glow-text {
+    text-shadow: 0 0 20px hsla(221,83%,53%,.60), 0 0 40px hsla(221,83%,53%,.25);
+  }
+
+  /* ── Animated gradient border ────────────────────────────────────────── */
+  .gradient-border {
+    background: linear-gradient(var(--card), var(--card)) padding-box,
+                linear-gradient(135deg, #2563eb, #06b6d4) border-box;
+    border: 1px solid transparent;
   }
 }

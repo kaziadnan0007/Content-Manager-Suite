@@ -71,7 +71,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="shopbd-theme">
+      <ThemeProvider defaultTheme="dark" storageKey="shopbd-theme">
         <AuthProvider>
           <CartProvider>
             <AuthGateProvider>

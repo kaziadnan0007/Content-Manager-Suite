@@ -85,7 +85,8 @@ function QuickViewModal({ product, open, onClose }: { product: Product; open: bo
               </div>
             )}
             {discount && (
-              <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-black px-2.5 py-1 rounded-lg shadow">
+              <span className="absolute top-3 left-3 text-white text-xs font-black px-2.5 py-1 rounded-lg shadow"
+                style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}>
                 -{discount}%
               </span>
             )}
@@ -119,7 +120,6 @@ function QuickViewModal({ product, open, onClose }: { product: Product; open: bo
               {savings && <Badge className="bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400 text-xs border-0">Save BDT {savings.toLocaleString()}</Badge>}
             </div>
 
-            {/* Description */}
             {product.description && (
               <p className="text-sm text-muted-foreground leading-relaxed border-t border-border/50 pt-3">
                 {product.description.slice(0, 200)}{product.description.length > 200 ? "…" : ""}
@@ -131,7 +131,7 @@ function QuickViewModal({ product, open, onClose }: { product: Product; open: bo
               {product.stock > 0 ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse" />
-                  <span className="text-sm font-medium text-green-600">
+                  <span className="text-sm font-medium text-green-500">
                     {isLowStock ? `Only ${product.stock} left — hurry!` : "In Stock"}
                   </span>
                 </>
@@ -143,11 +143,10 @@ function QuickViewModal({ product, open, onClose }: { product: Product; open: bo
               )}
             </div>
 
-            {/* Qty selector */}
             {product.stock > 0 && (
               <div className="flex items-center gap-3">
                 <span className="text-sm font-semibold">Quantity:</span>
-                <div className="flex items-center border rounded-xl overflow-hidden">
+                <div className="flex items-center border rounded-xl overflow-hidden border-border/60">
                   <button className="w-9 h-9 hover:bg-muted transition-colors flex items-center justify-center font-bold text-lg"
                     onClick={() => setQty(q => Math.max(1, q - 1))} disabled={qty <= 1}>−</button>
                   <span className="w-10 text-center font-black tabular-nums">{qty}</span>
@@ -157,19 +156,18 @@ function QuickViewModal({ product, open, onClose }: { product: Product; open: bo
               </div>
             )}
 
-            {/* Delivery */}
             <div className="text-xs text-muted-foreground bg-muted/50 rounded-xl px-3 py-2 flex items-center gap-2">
               🚚 <span>Inside Dhaka BDT 60 · Outside Dhaka BDT 120 · Free above BDT 500</span>
             </div>
 
-            {/* Actions */}
             <div className="flex flex-col gap-2 mt-1">
               {product.stock > 0 ? (
                 <>
-                  <Button size="lg" className="w-full gap-2 font-black neon-glow" onClick={handleBuy}>
+                  <Button size="lg" className="w-full gap-2 font-black neon-glow" onClick={handleBuy}
+                    style={{ background: "linear-gradient(135deg, #2563eb, #1d4ed8)" }}>
                     <Zap className="w-4 h-4" /> Buy Now — BDT {(product.price * qty).toLocaleString()}
                   </Button>
-                  <Button size="lg" variant="outline" className="w-full gap-2 font-bold" onClick={handleAdd}>
+                  <Button size="lg" variant="outline" className="w-full gap-2 font-bold border-primary/30 hover:border-primary hover:bg-primary/10" onClick={handleAdd}>
                     <ShoppingCart className="w-4 h-4" /> Add to Cart
                   </Button>
                 </>
@@ -258,55 +256,86 @@ export function ProductCard({ product }: { product: Product }) {
       <QuickViewModal product={product} open={quickViewOpen} onClose={() => setQuickViewOpen(false)} />
 
       <Link href={`/products/${product.id}`}>
-        <div className="group relative bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:border-primary/40 hover:-translate-y-1 transition-all duration-200 cursor-pointer h-full flex flex-col product-card-shine">
-
+        <div
+          className="group relative rounded-2xl overflow-hidden cursor-pointer h-full flex flex-col product-card-shine transition-all duration-300"
+          style={{
+            background: "rgba(30,41,59,0.80)",
+            border: "1px solid rgba(255,255,255,.07)",
+            backdropFilter: "blur(8px)",
+          }}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.transform = "translateY(-4px)";
+            el.style.boxShadow = "0 0 0 1px rgba(37,99,235,.40), 0 16px 48px rgba(0,0,0,.50), 0 0 32px rgba(37,99,235,.12)";
+            el.style.borderColor = "rgba(37,99,235,.40)";
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.transform = "";
+            el.style.boxShadow = "";
+            el.style.borderColor = "rgba(255,255,255,.07)";
+          }}
+        >
           {/* Image */}
-          <div className="relative overflow-hidden bg-muted aspect-square">
+          <div className="relative overflow-hidden bg-muted/20 aspect-square">
             {product.images?.[0] ? (
               <img
                 src={product.images[0]}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-400"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 loading="lazy"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/60">
-                <span className="text-5xl opacity-40">📦</span>
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
+                <span className="text-5xl opacity-30">📦</span>
               </div>
             )}
 
-            {/* Badges — top left */}
+            {/* Badges */}
             <div className="absolute top-2 left-2 flex flex-col gap-1">
               {discount && discount >= 5 && (
-                <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-sm">
+                <span className="text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-sm"
+                  style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}>
                   -{discount}%
                 </span>
               )}
               {product.badge && (
-                <span className="bg-primary text-primary-foreground text-[10px] font-black px-2 py-0.5 rounded-lg uppercase shadow-sm">
+                <span className="text-white text-[10px] font-black px-2 py-0.5 rounded-lg uppercase shadow-sm"
+                  style={{ background: "linear-gradient(135deg, #2563eb, #1d4ed8)" }}>
                   {product.badge}
                 </span>
               )}
               {product.featured && !product.badge && !discount && (
-                <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-sm">
+                <span className="text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-sm"
+                  style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}>
                   ⭐ Top Pick
                 </span>
               )}
               {isLowStock && (
-                <span className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-sm animate-pulse">
+                <span className="text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-sm animate-pulse"
+                  style={{ background: "linear-gradient(135deg, #ea580c, #c2410c)" }}>
                   🔥 Only {product.stock} left
                 </span>
               )}
             </div>
 
-            {/* Wishlist — top right */}
+            {/* Wishlist */}
             <button
               onClick={handleWishlist}
               className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all duration-200 z-10
                 ${wishlisted
-                  ? "bg-red-500 text-white scale-100"
-                  : "bg-white/90 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500"
+                  ? "scale-100"
+                  : "opacity-0 group-hover:opacity-100"
                 }`}
+              style={wishlisted ? {
+                background: "linear-gradient(135deg, #ef4444, #dc2626)",
+                color: "white",
+              } : {
+                background: "rgba(255,255,255,.12)",
+                backdropFilter: "blur(8px)",
+                color: "rgba(255,255,255,.70)",
+                border: "1px solid rgba(255,255,255,.15)",
+              }}
               title={wishlisted ? "Remove from wishlist" : "Save to wishlist"}
             >
               <Heart className={`w-4 h-4 transition-all ${wishlisted ? "fill-white" : ""}`} />
@@ -314,8 +343,8 @@ export function ProductCard({ product }: { product: Product }) {
 
             {/* Out of stock overlay */}
             {product.stock <= 0 && (
-              <div className="absolute inset-0 bg-black/55 flex items-center justify-center backdrop-blur-[1px]">
-                <span className="bg-white text-black text-xs font-black px-4 py-1.5 rounded-full shadow-lg">
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-[2px]">
+                <span className="bg-white/10 text-white text-xs font-black px-4 py-1.5 rounded-full border border-white/20">
                   Out of Stock
                 </span>
               </div>
@@ -326,21 +355,33 @@ export function ProductCard({ product }: { product: Product }) {
               <div className="absolute bottom-2 inset-x-2 flex gap-1.5 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-200">
                 <button
                   onClick={handleQuickView}
-                  className="flex items-center justify-center gap-1 bg-white/95 backdrop-blur text-muted-foreground text-[11px] font-black py-2 px-2.5 rounded-xl shadow-lg hover:bg-muted hover:text-foreground transition-colors border border-border/40"
+                  className="flex items-center justify-center gap-1 text-[11px] font-black py-2 px-2.5 rounded-xl shadow-lg transition-all"
+                  style={{
+                    background: "rgba(255,255,255,.10)",
+                    backdropFilter: "blur(12px)",
+                    color: "rgba(255,255,255,.80)",
+                    border: "1px solid rgba(255,255,255,.15)",
+                  }}
                   title="Quick View"
                 >
                   <Eye className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 flex items-center justify-center gap-1 bg-white/95 backdrop-blur text-primary text-[11px] font-black py-2 px-2 rounded-xl shadow-lg hover:bg-primary hover:text-white transition-colors border border-primary/20"
+                  className="flex-1 flex items-center justify-center gap-1 text-white text-[11px] font-black py-2 px-2 rounded-xl shadow-lg transition-all"
+                  style={{
+                    background: "rgba(37,99,235,.80)",
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(37,99,235,.40)",
+                  }}
                 >
                   <ShoppingCart className="w-3.5 h-3.5" />
                   Add to Cart
                 </button>
                 <button
                   onClick={handleBuyNow}
-                  className="flex-1 flex items-center justify-center gap-1 bg-primary text-white text-[11px] font-black py-2 px-2 rounded-xl shadow-lg hover:bg-primary/90 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1 text-white text-[11px] font-black py-2 px-2 rounded-xl shadow-lg transition-all"
+                  style={{ background: "linear-gradient(135deg, #2563eb, #06b6d4)" }}
                 >
                   <Zap className="w-3.5 h-3.5" />
                   Buy Now
@@ -352,7 +393,7 @@ export function ProductCard({ product }: { product: Product }) {
           {/* Info */}
           <div className="p-3 flex flex-col gap-1 flex-1">
             {product.categoryName && (
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+              <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "rgba(96,165,250,.70)" }}>
                 {product.categoryName}
               </p>
             )}
@@ -388,27 +429,28 @@ export function ProductCard({ product }: { product: Product }) {
               )}
             </div>
 
-            {/* Savings */}
             {savings && savings > 0 ? (
-              <p className="text-[10px] text-green-600 dark:text-green-400 font-bold">
+              <p className="text-[10px] text-green-400 font-bold">
                 You save BDT {savings.toLocaleString()}
               </p>
             ) : product.price >= 500 ? (
-              <p className="text-[10px] text-green-600 dark:text-green-400 font-bold">
+              <p className="text-[10px] text-green-400 font-bold">
                 🚚 Free delivery
               </p>
             ) : null}
 
-            {/* Stock progress — only for low stock */}
             {isLowStock && product.stock <= 10 && (
               <div className="mt-1.5">
                 <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-orange-500 to-red-500 transition-all"
-                    style={{ width: `${stockPercent}%` }}
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${stockPercent}%`,
+                      background: "linear-gradient(90deg, #f59e0b, #ef4444)",
+                    }}
                   />
                 </div>
-                <p className="text-[9px] text-orange-600 dark:text-orange-400 font-bold mt-0.5">
+                <p className="text-[9px] text-orange-400 font-bold mt-0.5">
                   Selling fast — hurry!
                 </p>
               </div>
