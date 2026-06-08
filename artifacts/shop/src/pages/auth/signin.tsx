@@ -53,7 +53,7 @@ export function SignInPage() {
               <ShoppingBag className="w-8 h-8 text-primary" />
             </div>
             <h1 className="text-3xl font-black tracking-tight">Welcome Back</h1>
-            <p className="text-muted-foreground mt-1">Sign in to your AcholGatha account</p>
+            <p className="text-muted-foreground mt-1">Sign in to your SAFQUN account</p>
           </div>
 
           <div className="bg-card border rounded-2xl shadow-lg p-8">
@@ -95,7 +95,7 @@ export function SignInPage() {
             </form>
 
             <div className="mt-6 pt-5 border-t text-center text-sm text-muted-foreground">
-              New to AcholGatha?{" "}
+              New to SAFQUN?{" "}
               <Link href="/auth/signup" className="text-primary font-bold hover:underline">Create free account</Link>
             </div>
           </div>

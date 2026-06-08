@@ -35,9 +35,9 @@ export function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <img
-            src="/acholgatha-logo-transparent.png"
-            alt="AcholGatha"
-            className="h-12 w-auto object-contain mx-auto mb-2 [filter:brightness(0)_saturate(100%)_invert(62%)_sepia(98%)_saturate(700%)_hue-rotate(158deg)_brightness(105%)_contrast(102%)]"
+            src="/safqun-logo.png"
+            alt="SAFQUN"
+            className="h-14 w-auto object-contain mx-auto mb-2"
           />
           <p className="text-muted-foreground text-sm font-medium">Admin Control Panel</p>
         </div>

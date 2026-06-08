@@ -121,7 +121,7 @@ export function SignUpPage() {
       if (!rr.ok) { setOtpErr(rd.error || "Registration failed"); return; }
 
       login(rd.token, rd.customer);
-      toast({ title: "Account created!", description: `Welcome to AcholGatha, ${rd.customer.name}!` });
+      toast({ title: "Account created!", description: `Welcome to SAFQUN, ${rd.customer.name}!` });
       nav("/profile");
     } catch { setOtpErr("Network error. Try again."); }
     finally { setOtpLoading(false); }
@@ -159,7 +159,7 @@ export function SignUpPage() {
                   <UserPlus className="w-7 h-7 text-primary" />
                 </div>
                 <h1 className="text-2xl font-black tracking-tight">Create Account</h1>
-                <p className="text-muted-foreground mt-1 text-sm">Join AcholGatha — Bangladesh's #1 Shop</p>
+                <p className="text-muted-foreground mt-1 text-sm">Join SAFQUN — Shop Smart. Live Better.</p>
               </div>
 
               <div className="bg-card border rounded-2xl shadow-lg p-7">

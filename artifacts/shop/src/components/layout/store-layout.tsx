@@ -14,18 +14,14 @@ import { useState, useEffect, useRef } from "react";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useAuth } from "@/components/auth-context";
 
-/* ─── AcholGatha Logo ────────────────────────────────────────────────────── */
-function AcholGathaLogo({ size = "md", onDark = false }: { size?: "sm" | "md" | "lg"; onDark?: boolean }) {
-  const h = { sm: "h-10", md: "h-14", lg: "h-16" }[size];
+/* ─── SAFQUN Logo ────────────────────────────────────────────────────────── */
+function AcholGathaLogo({ size = "md" }: { size?: "sm" | "md" | "lg"; onDark?: boolean }) {
+  const h = { sm: "h-8", md: "h-10", lg: "h-12" }[size];
   return (
     <img
-      src="/acholgatha-logo-transparent.png"
-      alt="AcholGatha"
-      className={`${h} w-auto object-contain select-none drop-shadow-md ${
-        onDark
-          ? "brightness-0 invert"
-          : "[filter:brightness(0)_saturate(100%)_invert(62%)_sepia(98%)_saturate(700%)_hue-rotate(158deg)_brightness(105%)_contrast(102%)]"
-      }`}
+      src="/safqun-logo.png"
+      alt="SAFQUN"
+      className={`${h} w-auto object-contain select-none`}
     />
   );
 }
@@ -33,19 +29,17 @@ function AcholGathaLogo({ size = "md", onDark = false }: { size?: "sm" | "md" | 
 /* ─── Brand wordmark (shown alongside logo) ──────────────────────────────── */
 function BrandWordmark({ onDark = false }: { onDark?: boolean }) {
   return (
-    <div className="hidden sm:flex flex-col leading-none ml-0.5">
+    <div className="hidden sm:flex flex-col leading-none ml-1">
       <span
-        className={`font-black text-[1.1rem] tracking-tight leading-none ${
-          onDark
-            ? "text-white"
-            : "[background:linear-gradient(135deg,hsl(192_100%_38%),hsl(217_91%_58%))] bg-clip-text text-transparent"
+        className={`font-black text-[1.1rem] tracking-widest leading-none ${
+          onDark ? "text-white" : "text-white"
         }`}
-        style={{ fontFamily: "'Inter', sans-serif" }}
+        style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "0.12em" }}
       >
-        AcholGatha
+        SAFQUN
       </span>
       <span className={`text-[8px] font-bold tracking-[0.15em] uppercase mt-0.5 ${onDark ? "text-white/50" : "text-primary/60"}`}>
-        Bangladesh #1 Shop
+        Shop Smart. Live Better.
       </span>
     </div>
   );

@@ -20,7 +20,7 @@ interface ReceiptOrder {
   items: ReceiptItem[];
 }
 
-export function printReceipt(order: ReceiptOrder, siteName = "AcholGatha") {
+export function printReceipt(order: ReceiptOrder, siteName = "SAFQUN") {
   const dateStr = new Date(order.createdAt).toLocaleString("en-GB", {
     timeZone: "Asia/Dhaka",
     day: "2-digit", month: "short", year: "numeric",

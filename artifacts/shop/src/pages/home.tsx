@@ -327,6 +327,16 @@ export function Home() {
   return (
     <StoreLayout>
 
+      {/* ── SAFQUN HERO BANNER ─────────────────────────────────────────────── */}
+      <section className="w-full overflow-hidden">
+        <img
+          src="/safqun-banner.png"
+          alt="SAFQUN — Shop Smart. Live Better."
+          className="w-full object-cover block"
+          style={{ maxHeight: "520px", objectPosition: "center" }}
+        />
+      </section>
+
       {/* ── HERO CAROUSEL ──────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
         {activeBanners.length > 0 ? (

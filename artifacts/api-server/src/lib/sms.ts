@@ -21,9 +21,9 @@ export async function sendOtpEmail(
     });
 
     await transporter.sendMail({
-      from: `"AcholGatha" <${user}>`,
+      from: `"SAFQUN" <${user}>`,
       to: toEmail,
-      subject: "Your OTP Code - AcholGatha",
+      subject: "Your OTP Code - SAFQUN",
       text: [
         `Your OTP verification code is: ${otpCode}`,
         `This code expires in 10 minutes.`,
@@ -31,7 +31,7 @@ export async function sendOtpEmail(
       ].join("\n"),
       html: `
         <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px;">
-          <h2 style="color:#00D4FF;margin:0 0 16px">AcholGatha</h2>
+          <h2 style="color:#00D4FF;margin:0 0 16px">SAFQUN</h2>
           <p style="font-size:15px;color:#374151;margin:0 0 8px">Your OTP verification code is:</p>
           <div style="font-size:36px;font-weight:700;letter-spacing:10px;color:#111827;background:#f3f4f6;padding:16px 24px;border-radius:8px;text-align:center;margin:16px 0;">
             ${otpCode}
@@ -39,7 +39,7 @@ export async function sendOtpEmail(
           <p style="font-size:13px;color:#6b7280;margin:0 0 4px">⏱ This code expires in <strong>10 minutes</strong>.</p>
           <p style="font-size:13px;color:#6b7280;margin:0">🔒 Do not share this code with anyone.</p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>
-          <p style="font-size:11px;color:#9ca3af;margin:0">© AcholGatha — Bangladesh's #1 Online Shop</p>
+          <p style="font-size:11px;color:#9ca3af;margin:0">© SAFQUN — Shop Smart. Live Better.</p>
         </div>
       `,
     });

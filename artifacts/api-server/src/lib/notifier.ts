@@ -162,7 +162,7 @@ export async function sendOrderConfirmationEmail(
     `- Order Time: ${orderDetails.timestamp}\n\n` +
     `Thank you for shopping with us!\n` +
     `Best regards,\n` +
-    `AcholGatha`;
+    `SAFQUN`;
 
   try {
     await transporter.sendMail({
@@ -189,20 +189,20 @@ export async function sendWelcomeEmail(
 
   const body =
     `Dear ${customerName},\n\n` +
-    `Welcome to AcholGatha! Your account has been successfully created.\n\n` +
+    `Welcome to SAFQUN! Your account has been successfully created.\n\n` +
     `You can now:\n` +
     `- Track your orders\n` +
     `- Save your delivery address\n` +
     `- Get order updates directly to your email\n\n` +
     `Thank you for joining us!\n` +
     `Best regards,\n` +
-    `AcholGatha Team`;
+    `SAFQUN Team`;
 
   try {
     await transporter.sendMail({
       from,
       to: customerEmail,
-      subject: "🎉 Welcome to AcholGatha!",
+      subject: "🎉 Welcome to SAFQUN!",
       text: body,
     });
   } catch (err) {

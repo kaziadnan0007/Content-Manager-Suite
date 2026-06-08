@@ -106,7 +106,7 @@ function AuthGateModal({
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
               <ShoppingBag className="w-5 h-5 text-white" />
             </div>
-            <span className="text-white font-black text-xl tracking-tight">AcholGatha</span>
+            <span className="text-white font-black text-xl tracking-widest">SAFQUN</span>
           </div>
           <p className="text-white/80 text-sm font-medium">
             Sign in to add items to your cart &amp; place orders
@@ -257,7 +257,7 @@ function SignUpRedirect({ onClose }: { onClose: () => void }) {
         <UserPlus className="w-8 h-8 text-primary" />
       </div>
       <div>
-        <h3 className="font-black text-lg">New to AcholGatha?</h3>
+        <h3 className="font-black text-lg">New to SAFQUN?</h3>
         <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
           Create a free account to shop, track orders, and get exclusive deals.
         </p>

@@ -39,7 +39,7 @@ export function OrderSuccessPage() {
           </div>
 
           <h1 className="text-3xl md:text-4xl font-black mb-2">Order Confirmed!</h1>
-          <p className="text-muted-foreground text-lg">Thank you for shopping with AcholGatha</p>
+          <p className="text-muted-foreground text-lg">Thank you for shopping with SAFQUN</p>
         </div>
 
         {/* ── Order ID card ───────────────────────────────────────── */}

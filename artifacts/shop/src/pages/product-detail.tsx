@@ -46,7 +46,7 @@ const FAKE_REVIEWERS = [
 
 const REVIEW_TEXTS = [
   "Excellent product! Delivery was fast and packaging was great. Highly recommended.",
-  "Good quality, matches the description. Will definitely buy again from AcholGatha.",
+  "Good quality, matches the description. Will definitely buy again from SAFQUN.",
   "Very satisfied with the purchase. Customer service was helpful when I had a question.",
   "Product is exactly as shown. Reasonable price and quick delivery to my area.",
   "Bought as a gift and the recipient loved it! Great quality for the price.",

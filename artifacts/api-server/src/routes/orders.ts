@@ -10,15 +10,15 @@ const router = Router();
 
 const STATUS_SMS: Record<string, (name: string, orderId: number, total: number) => string> = {
   confirmed: (name, id) =>
-    `✅ AcholGatha: Hi ${name}, your Order #${id} has been CONFIRMED and is being prepared. Thank you for shopping with us!`,
+    `✅ SAFQUN: Hi ${name}, your Order #${id} has been CONFIRMED and is being prepared. Thank you for shopping with us!`,
   processing: (name, id) =>
-    `📦 AcholGatha: Hi ${name}, your Order #${id} is now PROCESSING. We're packing your items carefully!`,
+    `📦 SAFQUN: Hi ${name}, your Order #${id} is now PROCESSING. We're packing your items carefully!`,
   shipped: (name, id) =>
-    `🚚 AcholGatha: Great news ${name}! Your Order #${id} has been SHIPPED and is on its way. Track your order at acholgatha.com`,
+    `🚚 SAFQUN: Great news ${name}! Your Order #${id} has been SHIPPED and is on its way. Track your order at safqun.com`,
   delivered: (name, id, total) =>
-    `🎉 AcholGatha: Hi ${name}, your Order #${id} (BDT ${total.toLocaleString()}) has been DELIVERED! We hope you love it. Rate us & shop again at acholgatha.com`,
+    `🎉 SAFQUN: Hi ${name}, your Order #${id} (BDT ${total.toLocaleString()}) has been DELIVERED! We hope you love it. Rate us & shop again at safqun.com`,
   cancelled: (name, id) =>
-    `❌ AcholGatha: Hi ${name}, your Order #${id} has been CANCELLED. For queries call us or WhatsApp at 01700000000.`,
+    `❌ SAFQUN: Hi ${name}, your Order #${id} has been CANCELLED. For queries call us or WhatsApp at 01700000000.`,
 };
 
 function mapOrder(o: typeof ordersTable.$inferSelect) {
@@ -218,7 +218,7 @@ router.post("/orders", async (req, res) => {
 
     // ── SMS confirmation to customer ──────────────────────────────────────
     try {
-      const confirmMsg = `🛒 AcholGatha: Hi ${order!.customerName}, your Order #${order!.id} has been received! Total: BDT ${total.toLocaleString()}. We'll confirm soon. Thank you!`;
+      const confirmMsg = `🛒 SAFQUN: Hi ${order!.customerName}, your Order #${order!.id} has been received! Total: BDT ${total.toLocaleString()}. We'll confirm soon. Thank you!`;
       await sendSMS(order!.customerPhone, confirmMsg);
     } catch (smsErr) {
       req.log.warn({ smsErr }, "Order confirmation SMS failed (non-fatal)");

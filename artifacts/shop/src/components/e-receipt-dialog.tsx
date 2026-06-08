@@ -104,8 +104,8 @@ export function EReceiptDialog({ order, open, onClose }: Props) {
             justifyContent: "space-between",
           }}>
             <div>
-              <div style={{ fontSize: 24, fontWeight: 900, color: "#00D4FF", letterSpacing: "-0.5px", lineHeight: 1 }}>AcholGatha</div>
-              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.45)", fontWeight: 700, letterSpacing: "0.25em", textTransform: "uppercase", marginTop: 5 }}>Bangladesh's #1 Online Shop</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: "#00D4FF", letterSpacing: "0.15em", lineHeight: 1 }}>SAFQUN</div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.45)", fontWeight: 700, letterSpacing: "0.25em", textTransform: "uppercase", marginTop: 5 }}>Shop Smart. Live Better.</div>
             </div>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>E-RECEIPT</div>
@@ -232,7 +232,7 @@ export function EReceiptDialog({ order, open, onClose }: Props) {
             marginTop: 18,
           }}>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.8 }}>
-              Thank you for shopping with <strong style={{ color: "#00D4FF" }}>AcholGatha</strong>! 🎉
+              Thank you for shopping with <strong style={{ color: "#00D4FF" }}>SAFQUN</strong>! 🎉
             </div>
             <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 4 }}>
               Computer-generated receipt · Valid without signature

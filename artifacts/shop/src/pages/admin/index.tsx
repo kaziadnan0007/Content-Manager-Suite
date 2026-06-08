@@ -88,7 +88,7 @@ export function AdminDashboard() {
               <h1 className="text-2xl font-black text-white">Dashboard</h1>
             </div>
             <p className="text-sm" style={{ color: "rgba(255,255,255,.35)" }}>
-              {format(new Date(), "EEEE, MMMM d, yyyy")} — AcholGatha Control Center
+              {format(new Date(), "EEEE, MMMM d, yyyy")} — SAFQUN Control Center
             </p>
           </div>
         </div>

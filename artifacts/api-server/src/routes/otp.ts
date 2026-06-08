@@ -68,7 +68,7 @@ router.post("/otp/send", async (req, res) => {
     }
 
     // Fallback: Twilio SMS
-    const smsMessage = `Your AcholGatha OTP is: ${code}. Valid for 10 minutes. Do not share with anyone.`;
+    const smsMessage = `Your SAFQUN OTP is: ${code}. Valid for 10 minutes. Do not share with anyone.`;
     const { sent: smsSent, demoCode } = await sendSMS(normalizedPhone, smsMessage);
 
     if (smsSent) {
